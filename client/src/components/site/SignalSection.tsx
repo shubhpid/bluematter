@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import AsciiBrain from "./AsciiBrain";
-import { Eyebrow, Reveal, SplitWords } from "./motion";
+import EegTrace from "./EegTrace";
+import { Reveal, SplitWords } from "./motion";
 
 const bands = [
   { name: "Delta", range: "0.5–4 Hz", base: 0.42 },
@@ -10,6 +10,8 @@ const bands = [
   { name: "Beta", range: "12–30 Hz", base: 0.48 },
   { name: "Gamma", range: "30+ Hz", base: 0.3 },
 ];
+
+const channels = ["Fp1", "Fp2", "C3", "C4", "P3", "P4", "O1", "O2"];
 
 function useLiveBands() {
   const [values, setValues] = useState(() => bands.map((b) => b.base));
@@ -23,21 +25,14 @@ function useLiveBands() {
   return values;
 }
 
-function Corner({ className }: { className: string }) {
-  return <span aria-hidden="true" className={`absolute size-4 border-signal ${className}`} />;
-}
-
-export default function BrainViewport() {
+export default function SignalSection() {
   const values = useLiveBands();
 
   return (
-    <section aria-labelledby="viewport-title" className="relative overflow-hidden py-24 md:py-32">
+    <section aria-labelledby="signal-title" className="relative overflow-hidden pb-24 md:pb-32">
       <div className="container grid items-center gap-12 lg:grid-cols-[1fr_1.25fr] lg:gap-16">
         <div className="flex flex-col gap-6">
-          <Reveal>
-            <Eyebrow>Signal viewport</Eyebrow>
-          </Reveal>
-          <h2 id="viewport-title" className="type-h2 text-balance text-4xl text-paper md:text-5xl">
+          <h2 id="signal-title" className="type-h2 text-balance text-4xl text-paper md:text-5xl">
             <SplitWords text="Raw neural activity, decoded into intent." />
           </h2>
           <Reveal delay={0.1}>
@@ -72,22 +67,21 @@ export default function BrainViewport() {
         </div>
 
         <Reveal delay={0.1} y={40}>
-          <div className="relative aspect-square w-full rounded-lg border border-ink-line bg-ink-raised/60 sm:aspect-[5/4]">
-            <Corner className="left-3 top-3 border-l border-t" />
-            <Corner className="right-3 top-3 border-r border-t" />
-            <Corner className="bottom-3 left-3 border-b border-l" />
-            <Corner className="bottom-3 right-3 border-b border-r" />
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between px-8 pt-6 text-[11px] font-semibold uppercase tracking-widest text-slate">
-              <span>Cortex / 3D</span>
-              <span className="hidden sm:inline">Hover to steer</span>
-            </div>
-            <AsciiBrain className="absolute inset-6 top-12 bottom-12 cursor-grab text-[7px] leading-[7px] md:text-[8px] md:leading-[8px]" />
-            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-8 pb-5 text-[11px] font-semibold uppercase tracking-widest text-slate">
+          <div className="flex flex-col overflow-hidden rounded-lg border border-ink-line bg-ink-raised/60">
+            <div className="flex items-center justify-between border-b border-ink-line px-6 py-4 text-[11px] font-semibold uppercase tracking-widest text-slate">
               <span className="flex items-center gap-2 text-signal">
                 <span className="size-1.5 rounded-full bg-signal" />
-                Streaming
+                Live EEG
               </span>
-              <span className="tabular-nums">256 Hz</span>
+              <span className="tabular-nums">8 ch &middot; 256 Hz</span>
+            </div>
+            <div className="flex gap-4 px-6 py-6">
+              <ul className="flex flex-col justify-around text-xs font-semibold tabular-nums text-slate" aria-label="Electrode positions">
+                {channels.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+              <EegTrace channels={8} className="h-80 w-full md:h-96" />
             </div>
           </div>
         </Reveal>

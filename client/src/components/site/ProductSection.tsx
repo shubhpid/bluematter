@@ -2,7 +2,7 @@ import { motion, useInView } from "framer-motion";
 import { Battery, Bluetooth, BrainCircuit, CircuitBoard, Cpu, Smartphone, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import handImage from "../assets/Hand.png";
-import { EASE, Eyebrow, Reveal, SplitWords } from "./motion";
+import { EASE, Reveal, SplitWords } from "./motion";
 
 type Feature = { icon: LucideIcon; title: string; desc: string; stat: string };
 
@@ -77,9 +77,6 @@ export default function ProductSection() {
     <section id="technology" aria-labelledby="product-title" className="py-24 md:py-32">
       <div className="container">
         <div className="flex max-w-3xl flex-col gap-6">
-          <Reveal>
-            <Eyebrow>The product</Eyebrow>
-          </Reveal>
           <h2 id="product-title" className="type-h2 text-balance text-4xl text-paper md:text-6xl">
             <SplitWords text="Everyday technology. Extraordinary control." />
           </h2>

@@ -4,7 +4,7 @@ import { useRef } from "react";
 import assemblyTesting from "../assets/assembly-testing.jpg";
 import prototypeRefinement from "../assets/prototype-refinement.png";
 import researchDesign from "../assets/research-design.png";
-import { Eyebrow, Reveal, SplitWords } from "./motion";
+import { Reveal, SplitWords } from "./motion";
 
 type Status = "complete" | "current" | "upcoming";
 
@@ -55,9 +55,6 @@ export default function RoadmapSection() {
         <div className="container flex flex-col gap-14">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
             <div className="flex flex-col gap-6">
-              <Reveal>
-                <Eyebrow tone="light">Development roadmap</Eyebrow>
-              </Reveal>
               <h2 id="roadmap-title" className="type-h2 text-balance text-4xl md:text-6xl">
                 <SplitWords text="Building the future, one phase at a time." />
               </h2>

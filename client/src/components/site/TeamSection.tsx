@@ -5,7 +5,7 @@ import lucca from "../assets/lucca-headshot.jpg";
 import saee from "../assets/saee-headshot.jpg";
 import taylor from "../assets/taylor-foster-headshot.png";
 import tyler from "../assets/tyler-headshot.png";
-import { Eyebrow, Reveal, SplitWords } from "./motion";
+import { Reveal, SplitWords } from "./motion";
 
 const team = [
   {
@@ -65,9 +65,6 @@ export default function TeamSection() {
       <div className="container flex flex-col gap-14">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
           <div className="flex flex-col gap-6">
-            <Reveal>
-              <Eyebrow>The team</Eyebrow>
-            </Reveal>
             <h2 id="team-title" className="type-h2 text-balance text-4xl text-paper md:text-6xl">
               <SplitWords text="The minds behind it." />
             </h2>

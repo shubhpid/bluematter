@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CountUp, EASE, Eyebrow, Reveal, SplitWords } from "./motion";
+import { CountUp, EASE, Reveal, SplitWords } from "./motion";
 
 const stats = [
   { value: 2.75, decimals: 2, prefix: "$", suffix: "B", label: "Global BCI market", note: "2026 valuation" },
@@ -24,9 +24,6 @@ export default function MarketSection() {
         <div className="container flex flex-col gap-16">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
             <div className="flex flex-col gap-6">
-              <Reveal>
-                <Eyebrow tone="light">Market opportunity</Eyebrow>
-              </Reveal>
               <h2 id="market-title" className="type-h2 text-balance text-4xl md:text-6xl">
                 <SplitWords text="A fast-growing market, ready for a better device." />
               </h2>

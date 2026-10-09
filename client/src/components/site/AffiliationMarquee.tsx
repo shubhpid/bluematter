@@ -6,15 +6,18 @@ const items = [
   { name: "ASU Luminosity", logo: null },
 ];
 
+/** Compact, light-surface affiliation strip that sits along the bottom of the hero. */
 export default function AffiliationMarquee() {
   const loop = [...items, ...items, ...items, ...items];
   return (
-    <section aria-label="Affiliations" className="border-y border-ink-line/60 py-8">
-      <div className="container mb-6">
-        <p className="type-eyebrow text-center text-slate">Built at and backed by</p>
-      </div>
-      <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-        <ul className="marquee-track flex w-max items-center gap-16">
+    <div
+      role="region"
+      aria-label="Affiliations"
+      className="relative flex items-center gap-6 border-t border-paper-line py-4"
+    >
+      <p className="type-eyebrow hidden shrink-0 pl-5 text-slate md:block md:pl-10">Built at and backed by</p>
+      <div className="relative min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <ul className="marquee-track flex w-max items-center gap-14">
           {loop.map((item, i) => (
             <li
               key={`${item.name}-${i}`}
@@ -22,13 +25,13 @@ export default function AffiliationMarquee() {
               className="flex items-center gap-3 opacity-60 grayscale transition-all duration-500 hover:opacity-100 hover:grayscale-0"
             >
               {item.logo && (
-                <img src={item.logo} alt="" className="size-8 rounded-md bg-paper object-contain p-1" />
+                <img src={item.logo} alt="" className="size-7 rounded-md border border-paper-line bg-paper object-contain p-0.5" />
               )}
-              <span className="whitespace-nowrap text-lg font-semibold tracking-tight text-paper">{item.name}</span>
+              <span className="whitespace-nowrap text-base font-semibold tracking-tight text-paper-ink">{item.name}</span>
             </li>
           ))}
         </ul>
       </div>
-    </section>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { CountUp, Eyebrow, Reveal, SplitWords } from "./motion";
+import { CountUp, Reveal, SplitWords } from "./motion";
 
 const metrics = [
   { value: 400, prefix: "~$", suffix: "", label: "Target device cost", note: "vs. $10k+ clinical" },
@@ -14,9 +14,6 @@ export default function VisionSection() {
         <div className="container flex flex-col gap-16">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
             <div className="flex flex-col gap-6">
-              <Reveal>
-                <Eyebrow tone="light">Our vision</Eyebrow>
-              </Reveal>
               <h2 id="vision-title" className="type-h2 text-balance text-5xl md:text-7xl">
                 <SplitWords text="BCI for everyone." />
               </h2>
