@@ -21,7 +21,8 @@ export default function SiteNav() {
   useMotionValueEvent(scrollY, "change", (y) => {
     const prev = scrollY.getPrevious() ?? 0;
     setScrolled(y > 24);
-    setHidden(y > 640 && y > prev && !open);
+    if (Math.abs(y - prev) < 2) return;
+    setHidden(y > 40 && y > prev && !open);
   });
 
   return (

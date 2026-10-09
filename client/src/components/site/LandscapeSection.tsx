@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import { AlertTriangle, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { EASE, Reveal, SplitWords } from "./motion";
+import { EASE, Reveal } from "./motion";
 
 type Device = {
   id: string;
@@ -15,11 +15,14 @@ type Device = {
   summary: string;
   notes: string[];
   ours?: boolean;
+  /** Where the chart label sits relative to the dot, chosen so neighbours never collide. */
+  label: "top" | "bottom" | "left" | "right";
 };
 
 const devices: Device[] = [
   {
     id: "bluematter",
+    label: "top",
     name: "BlueMatter",
     kind: "Everyday wearable",
     channels: 20,
@@ -32,6 +35,7 @@ const devices: Device[] = [
   },
   {
     id: "muse",
+    label: "bottom",
     name: "Muse",
     kind: "Consumer headband",
     channels: 4,
@@ -43,6 +47,7 @@ const devices: Device[] = [
   },
   {
     id: "emotiv",
+    label: "bottom",
     name: "Emotiv EPOC X",
     kind: "Consumer headset",
     channels: 14,
@@ -54,6 +59,7 @@ const devices: Device[] = [
   },
   {
     id: "openbci",
+    label: "top",
     name: "OpenBCI",
     kind: "Research kit",
     channels: 16,
@@ -65,6 +71,7 @@ const devices: Device[] = [
   },
   {
     id: "clinical",
+    label: "right",
     name: "Clinical EEG",
     kind: "Lab system",
     channels: 256,
@@ -76,6 +83,7 @@ const devices: Device[] = [
   },
   {
     id: "synchron",
+    label: "top",
     name: "Synchron Stentrode",
     kind: "Endovascular implant",
     channels: 16,
@@ -87,6 +95,7 @@ const devices: Device[] = [
   },
   {
     id: "neuralink",
+    label: "left",
     name: "Neuralink N1",
     kind: "Surgical implant",
     channels: 1024,
@@ -99,6 +108,12 @@ const devices: Device[] = [
 ];
 
 const CYCLE_MS = 5000;
+const labelPos = {
+  top: "bottom-full left-1/2 mb-1.5 -translate-x-1/2",
+  bottom: "top-full left-1/2 mt-1.5 -translate-x-1/2",
+  right: "left-full top-1/2 ml-2 -translate-y-1/2",
+  left: "right-full top-1/2 mr-2 -translate-y-1/2",
+} as const;
 const yTicks = [4, 16, 64, 256, 1024];
 const yPct = (ch: number) => ((Math.log2(ch) - 1) / 10) * 100;
 const xPct = (barrier: number) => 4 + barrier * 92;
@@ -120,7 +135,7 @@ function Chart({ active, onSelect }: { active: string; onSelect: (id: string) =>
           animate={inView ? { scaleX: 1, opacity: 1 } : undefined}
           transition={{ duration: 1.2, delay: 0.3, ease: EASE }}
         >
-          <span className="absolute right-3 top-3 text-[11px] font-semibold uppercase tracking-widest text-slate">
+          <span className="absolute bottom-3 right-3 text-[11px] font-semibold uppercase tracking-widest text-slate">
             Implant required
           </span>
         </motion.div>
@@ -171,7 +186,7 @@ function Chart({ active, onSelect }: { active: string; onSelect: (id: string) =>
                   aria-pressed={isActive}
                   animate={reduce ? undefined : { y: [0, -5, 0] }}
                   transition={{ duration: 3 + (i % 3), repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
-                  className="group relative flex items-center gap-2"
+                  className="group relative flex"
                 >
                   <span className="relative flex size-4 items-center justify-center">
                     {(isActive || d.ours) && (
@@ -191,7 +206,7 @@ function Chart({ active, onSelect }: { active: string; onSelect: (id: string) =>
                     />
                   </span>
                   <span
-                    className={`whitespace-nowrap text-xs font-semibold transition-colors ${
+                    className={`absolute whitespace-nowrap text-xs font-semibold transition-colors ${labelPos[d.label]} ${
                       d.ours ? "text-signal" : isActive ? "text-paper" : "text-slate group-hover:text-slate-light"
                     }`}
                   >
@@ -304,12 +319,19 @@ export default function LandscapeSection() {
   const device = devices.find((d) => d.id === active) ?? devices[0];
 
   return (
-    <section ref={sectionRef} aria-labelledby="landscape-title" className="py-24 md:py-32">
+    <section ref={sectionRef} aria-labelledby="landscape-title" className="overflow-x-clip py-24 md:py-32">
       <div className="container flex flex-col gap-14">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
-          <h2 id="landscape-title" className="type-h2 text-balance text-4xl text-paper md:text-6xl">
-            <SplitWords text="Every other path to your brain asks for something." />
-          </h2>
+          <motion.h2
+            id="landscape-title"
+            initial={reduce ? false : { x: "-110vw", opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 1.3, ease: EASE }}
+            className="type-h2 text-balance text-4xl text-paper md:text-6xl"
+          >
+            Every other path to your brain asks for something.
+          </motion.h2>
           <Reveal delay={0.1}>
             <p className="max-w-lg text-pretty text-lg leading-relaxed text-slate-light">
               Implants ask for surgery. Lab systems ask for gel, wires and a technician. Consumer headsets give up

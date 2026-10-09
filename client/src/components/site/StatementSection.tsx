@@ -2,14 +2,14 @@ import { motion, useScroll, useTransform, type MotionValue } from "framer-motion
 import { useRef } from "react";
 
 const statement =
-  "BlueMatter is a discreet wireless EEG system hidden inside a baseball cap — clinical-grade signal acquisition with consumer-friendly design, seamlessly connected to your world.";
+  "BlueMatter is a discreet wireless EEG system hidden inside a baseball cap. You'll get clinical-grade signal acquisition with consumer-friendly design, seamlessly connected to your world.";
 const accent = new Set(["baseball", "cap", "clinical-grade", "consumer-friendly"]);
 
 function Word({ word, progress, range }: { word: string; progress: MotionValue<number>; range: [number, number] }) {
   const opacity = useTransform(progress, range, [0.14, 1]);
   const y = useTransform(progress, range, [6, 0]);
   return (
-    <motion.span style={{ opacity, y }} className={`inline-block ${accent.has(word) ? "text-signal" : ""}`}>
+    <motion.span style={{ opacity, y }} className={`inline-block ${accent.has(word.replace(/[.,]$/, "")) ? "text-signal" : ""}`}>
       {word}&nbsp;
     </motion.span>
   );
