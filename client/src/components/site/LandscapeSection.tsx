@@ -321,7 +321,16 @@ export default function LandscapeSection() {
   return (
     <section ref={sectionRef} aria-labelledby="landscape-title" className="overflow-x-clip py-24 md:py-32">
       <div className="container flex flex-col gap-14">
-        <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
+        <motion.p
+          initial={reduce ? false : { x: "-110vw" }}
+          whileInView={{ x: 0 }}
+          viewport={{ once: true, amount: 0 }}
+          transition={{ duration: 1.1, ease: EASE }}
+          className="type-h1 text-5xl text-signal md:text-7xl"
+        >
+          The Market
+        </motion.p>
+        <div className="-mt-6 grid gap-8 lg:grid-cols-2 lg:items-end">
           <motion.h2
             id="landscape-title"
             initial={reduce ? false : { x: "-110vw" }}

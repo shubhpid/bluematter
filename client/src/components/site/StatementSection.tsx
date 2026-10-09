@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 
 const statement =
   "BlueMatter is a discreet wireless EEG system hidden inside a baseball cap. You'll get clinical-grade signal acquisition with consumer-friendly design, seamlessly connected to your world.";
@@ -26,7 +26,10 @@ export default function StatementSection() {
       <div className="container">
         <p ref={ref} className="max-w-5xl text-pretty text-3xl font-semibold leading-tight tracking-tight text-paper md:text-5xl">
           {words.map((w, i) => (
-            <Word key={`${w}-${i}`} word={w} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]} />
+            <Fragment key={`${w}-${i}`}>
+              {w === "You'll" && <br />}
+              <Word word={w} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]} />
+            </Fragment>
           ))}
         </p>
       </div>

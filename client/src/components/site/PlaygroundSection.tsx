@@ -11,7 +11,7 @@ export default function PlaygroundSection() {
       <div className="container relative flex flex-col gap-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
           <h2 id="playground-title" className="type-h2 max-w-2xl text-balance text-4xl text-paper md:text-5xl">
-            <SplitWords text="Go on, play with a brain." />
+            <SplitWords text="Go on, Play with the brain." />
           </h2>
           <Reveal delay={0.15}>
             <p className="max-w-md text-pretty leading-relaxed text-slate-light">

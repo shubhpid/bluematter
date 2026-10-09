@@ -103,7 +103,14 @@ export default function ThoughtAscii() {
             pressed ? "bg-signal-deep text-paper" : ""
           }`}
         >
-          {pressed ? "...but nothing happened" : "Read my mind"}
+          {pressed ? (
+            <span className="flex flex-col items-center gap-1">
+              <span>...but nothing happened</span>
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-paper/70">(coming soon!)</span>
+            </span>
+          ) : (
+            "Read my mind"
+          )}
         </button>
       </div>
 

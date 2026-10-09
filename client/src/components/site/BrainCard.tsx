@@ -6,6 +6,7 @@ import AsciiExplosion from "./AsciiExplosion";
 import { EASE } from "./motion";
 
 const METER_CELLS = 14;
+const SCROLL_KEYS = new Set(["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"]);
 
 function Corner({ className }: { className: string }) {
   return <span aria-hidden="true" className={`absolute size-4 border-signal ${className}`} />;
@@ -37,11 +38,27 @@ export default function BrainCard({ className = "" }: { className?: string }) {
     setReturning(false);
   }, []);
 
+  // While fragments are loose, any attempt to scroll rebuilds the brain first; scrolling resumes once it's whole.
   useEffect(() => {
     if (!explosion) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && rebuild();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const block = (e: Event) => {
+      if (e.cancelable) e.preventDefault();
+      e.stopImmediatePropagation();
+      rebuild();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") rebuild();
+      else if (SCROLL_KEYS.has(e.key)) block(e);
+    };
+    const opts = { capture: true, passive: false } as const;
+    window.addEventListener("wheel", block, opts);
+    window.addEventListener("touchmove", block, opts);
+    window.addEventListener("keydown", onKey, true);
+    return () => {
+      window.removeEventListener("wheel", block, opts);
+      window.removeEventListener("touchmove", block, opts);
+      window.removeEventListener("keydown", onKey, true);
+    };
   }, [explosion, rebuild]);
 
   useEffect(() => {
@@ -108,6 +125,7 @@ export default function BrainCard({ className = "" }: { className?: string }) {
               <RotateCcw className="size-4" aria-hidden="true" />
               Rebuild the brain
             </button>
+            <p className="text-xs text-slate">Leave the pieces alone for 5 seconds and it puts itself back together.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -136,6 +154,7 @@ export default function BrainCard({ className = "" }: { className?: string }) {
           returning={returning}
           getHomeRect={() => homeRef.current?.getBoundingClientRect() ?? null}
           onReturned={onReturned}
+          onIdle={rebuild}
         />
       )}
     </div>

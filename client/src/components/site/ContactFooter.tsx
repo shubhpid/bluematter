@@ -32,11 +32,11 @@ const socials = [
 
 export default function ContactFooter() {
   return (
-    <div className="flex min-h-[100svh] flex-col px-2 pt-2 md:px-6 md:pt-6">
+    <div data-page className="flex h-[100svh] min-h-[560px] flex-col px-2 pt-2 md:px-6 md:pt-6">
       <section
         id="contact"
         aria-labelledby="contact-title"
-        className="grid-lines-dark relative flex flex-1 flex-col justify-center overflow-hidden rounded-lg border border-ink-line bg-ink-raised py-20"
+        className="grid-lines-dark relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-lg border border-ink-line bg-ink-raised py-8"
       >
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           {words.map((w) => (
@@ -49,13 +49,16 @@ export default function ContactFooter() {
             </span>
           ))}
         </div>
-        <div className="container relative flex flex-col items-center gap-8 text-center">
-          <img src="/brand/bluematter-mark.png" alt="" className="size-14" />
-          <h2 id="contact-title" className="type-h1 max-w-4xl text-balance text-5xl text-paper md:text-7xl">
+        <div className="container relative flex flex-col items-center gap-4 text-center [@media(min-height:760px)]:gap-6">
+          <img src="/brand/bluematter-mark.png" alt="" className="hidden size-12 [@media(min-height:760px)]:block" />
+          <h2
+            id="contact-title"
+            className="type-h1 max-w-4xl text-balance text-4xl text-paper md:text-5xl [@media(min-height:760px)]:md:text-6xl"
+          >
             <SplitWords text="Interested in the future of BCI?" />
           </h2>
           <Reveal delay={0.1}>
-            <p className="max-w-xl text-pretty text-lg leading-relaxed text-slate-light">
+            <p className="max-w-xl text-pretty text-base leading-relaxed text-slate-light md:text-lg">
               Researchers, investors, partners, or simply curious &mdash; we&apos;d love to connect.
             </p>
           </Reveal>
@@ -71,18 +74,18 @@ export default function ContactFooter() {
         </div>
       </section>
 
-      <footer className="container flex flex-col gap-10 py-12">
-        <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1.3fr]">
-          <div className="flex max-w-xs flex-col gap-4">
-            <img src="/brand/bluematter-wordmark.png" alt="BlueMatter" className="h-9 w-fit" />
-            <p className="text-sm leading-relaxed text-slate-light">
+      <footer className="container flex shrink-0 flex-col gap-5 py-6">
+        <div className="grid gap-6 md:grid-cols-[1fr_1fr] lg:grid-cols-[1fr_auto_1.6fr] lg:items-start">
+          <div className="flex max-w-xs flex-col gap-3">
+            <img src="/brand/bluematter-wordmark.png" alt="BlueMatter" className="h-8 w-fit" />
+            <p className="hidden text-sm leading-relaxed text-slate-light [@media(min-height:760px)]:md:block">
               Pioneering practical, non-invasive brain-computer interfaces for consumer applications.
             </p>
           </div>
 
-          <nav aria-label="Footer" className="flex flex-col gap-4">
+          <nav aria-label="Footer" className="hidden flex-col gap-3 md:flex">
             <h3 className="type-eyebrow text-slate">Explore</h3>
-            <ul className="grid grid-cols-2 gap-x-8 gap-y-3">
+            <ul className="grid grid-cols-3 gap-x-6 gap-y-2">
               {footerLinks.map((l) => (
                 <li key={l.href}>
                   <a href={l.href} className="text-sm font-semibold text-slate-light transition-colors hover:text-paper">
@@ -93,15 +96,15 @@ export default function ContactFooter() {
             </ul>
           </nav>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 md:col-span-2 lg:col-span-1">
             <h3 className="type-eyebrow text-slate">Reach out</h3>
-            <ul className="flex flex-col gap-2">
+            <ul className="grid gap-2 sm:grid-cols-3">
               {socials.map((s) => (
-                <li key={s.label}>
+                <li key={s.label} className="min-w-0">
                   <a
                     href={s.href}
                     {...(s.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    className="group flex items-center gap-3 rounded-md border border-ink-line px-4 py-3 transition-colors hover:border-signal/60 hover:bg-ink-raised"
+                    className="group flex items-center gap-3 rounded-md border border-ink-line px-3 py-2.5 transition-colors hover:border-signal/60 hover:bg-ink-raised"
                   >
                     <s.icon className="size-4 shrink-0 text-signal" />
                     <span className="flex min-w-0 flex-1 flex-col">
@@ -115,7 +118,7 @@ export default function ContactFooter() {
             </ul>
           </div>
         </div>
-        <div className="flex flex-col justify-between gap-4 border-t border-ink-line pt-6 text-sm text-slate sm:flex-row">
+        <div className="flex flex-col justify-between gap-2 border-t border-ink-line pt-4 text-xs text-slate sm:flex-row">
           <p>&copy; {new Date().getFullYear()} The BlueMatter Project &middot; ASU Luminosity Lab</p>
           <p>NEXUS Summit 2026 &middot; Health Track</p>
         </div>

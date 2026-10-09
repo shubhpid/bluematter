@@ -19,6 +19,7 @@ type Particle = {
 
 const COLORS = ["#00a3ff", "#94a9c8", "#f8fafc"];
 const AVOID_RADIUS = 150;
+const IDLE_MS = 5000;
 
 /**
  * Full-viewport canvas that takes the brain's ASCII characters, blasts them across the screen,
@@ -29,18 +30,23 @@ export default function AsciiExplosion({
   returning,
   getHomeRect,
   onReturned,
+  onIdle,
 }: {
   data: ExplosionData;
   returning: boolean;
   getHomeRect: () => DOMRect | null;
   onReturned: () => void;
+  /** Fired once the cursor has left every fragment alone for IDLE_MS. */
+  onIdle: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const returningRef = useRef(returning);
   const onReturnedRef = useRef(onReturned);
+  const onIdleRef = useRef(onIdle);
   const getHomeRectRef = useRef(getHomeRect);
   returningRef.current = returning;
   onReturnedRef.current = onReturned;
+  onIdleRef.current = onIdle;
   getHomeRectRef.current = getHomeRect;
 
   useEffect(() => {
@@ -86,10 +92,11 @@ export default function AsciiExplosion({
       };
     });
 
-    const mouse = { x: -9999, y: -9999 };
+    const mouse = { x: -9999, y: -9999, movedAt: 0 };
     const onMove = (e: PointerEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
+      mouse.movedAt = performance.now();
     };
     const onOut = () => {
       mouse.x = -9999;
@@ -102,6 +109,8 @@ export default function AsciiExplosion({
     let last = performance.now();
     let returnStart = 0;
     let done = false;
+    let lastTouched = performance.now();
+    let idleFired = false;
 
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
@@ -131,6 +140,8 @@ export default function AsciiExplosion({
         const mdy = p.y - mouse.y;
         const md = Math.hypot(mdx, mdy);
         if (md < AVOID_RADIUS && md > 0.01) {
+          // A resting cursor that fragments drift into doesn't count as the user chasing them.
+          if (now - mouse.movedAt < 150) lastTouched = now;
           const push = (1 - md / AVOID_RADIUS) * 2.6 * f;
           p.vx += (mdx / md) * push;
           p.vy += (mdy / md) * push;
@@ -171,6 +182,11 @@ export default function AsciiExplosion({
           ctx.font = `600 ${(fontSize * p.scale).toFixed(1)}px ui-monospace, Menlo, monospace`;
           ctx.fillText(p.ch, p.x, p.y);
         }
+      }
+
+      if (!isReturning && !idleFired && now - lastTouched > IDLE_MS) {
+        idleFired = true;
+        onIdleRef.current();
       }
 
       const timedOut = returnStart && now - returnStart > 2600;

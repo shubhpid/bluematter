@@ -73,7 +73,6 @@ export default function SignalSection() {
                 <span className="size-1.5 rounded-full bg-signal" />
                 Live EEG
               </span>
-              <span className="tabular-nums">8 ch &middot; 256 Hz</span>
             </div>
             <div className="flex gap-4 px-6 py-6">
               <ul className="flex flex-col justify-around text-xs font-semibold tabular-nums text-slate" aria-label="Electrode positions">
