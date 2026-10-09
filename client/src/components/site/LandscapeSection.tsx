@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-mot
 import { AlertTriangle, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { EASE, Reveal, SlideIn } from "./motion";
+import NeuralField from "./NeuralField";
 
 type Device = {
   id: string;
@@ -319,8 +320,9 @@ export default function LandscapeSection() {
   const device = devices.find((d) => d.id === active) ?? devices[0];
 
   return (
-    <section ref={sectionRef} aria-labelledby="landscape-title" className="overflow-x-clip py-24 md:py-32">
-      <div className="container flex flex-col gap-14">
+    <section ref={sectionRef} aria-labelledby="landscape-title" className="relative overflow-x-clip py-24 md:py-32">
+      <NeuralField className="absolute inset-0 h-full w-full opacity-70 [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]" />
+      <div className="container relative flex flex-col gap-14">
         <SlideIn>
           <p className="type-h1 text-5xl text-signal md:text-7xl">The Market.</p>
         </SlideIn>

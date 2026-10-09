@@ -3,6 +3,7 @@ import { Battery, Bluetooth, BrainCircuit, CircuitBoard, Cpu, Smartphone, type L
 import { useEffect, useRef, useState } from "react";
 import handImage from "../assets/Hand.png";
 import { EASE, Reveal, SplitWords } from "./motion";
+import NeuralField from "./NeuralField";
 
 type Feature = { icon: LucideIcon; title: string; desc: string; stat: string };
 
@@ -74,8 +75,9 @@ export default function ProductSection() {
   const [active, setActive] = useState(0);
 
   return (
-    <section id="technology" aria-labelledby="product-title" className="py-24 md:py-32">
-      <div className="container">
+    <section id="technology" aria-labelledby="product-title" className="relative overflow-clip py-24 md:py-32">
+      <NeuralField className="absolute inset-0 h-full w-full opacity-70 [mask-image:linear-gradient(to_bottom,transparent,black_8%,black_92%,transparent)]" />
+      <div className="container relative">
         <div className="flex max-w-3xl flex-col gap-6">
           <h2 id="product-title" className="type-h2 text-balance text-4xl text-paper md:text-6xl">
             <SplitWords text="Everyday technology. Extraordinary control." />

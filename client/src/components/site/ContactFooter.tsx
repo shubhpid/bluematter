@@ -75,7 +75,8 @@ export default function ContactFooter() {
       </section>
 
       <footer className="container flex shrink-0 flex-col gap-5 py-6">
-        <div className="grid gap-6 md:grid-cols-[1fr_1fr] lg:grid-cols-[1fr_auto_1.6fr] lg:items-start">
+        <div className="flex items-center gap-10">
+        <div className="grid flex-1 gap-6 md:grid-cols-[1fr_1fr] lg:grid-cols-[1fr_auto_1.6fr] lg:items-start">
           <div className="flex max-w-xs flex-col gap-3">
             <img src="/brand/bluematter-wordmark.png" alt="BlueMatter" className="h-8 w-fit" />
             <p className="hidden text-sm leading-relaxed text-slate-light [@media(min-height:760px)]:md:block">
@@ -117,6 +118,12 @@ export default function ContactFooter() {
               ))}
             </ul>
           </div>
+        </div>
+          <img
+            src="/brand/bluematter-mark.png"
+            alt=""
+            className="hidden size-28 shrink-0 md:block lg:size-36"
+          />
         </div>
         <div className="flex flex-col justify-between gap-2 border-t border-ink-line pt-4 text-xs text-slate sm:flex-row">
           <p>&copy; {new Date().getFullYear()} The BlueMatter Project &middot; ASU Luminosity Lab</p>
