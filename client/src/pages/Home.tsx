@@ -1,34 +1,35 @@
-/*
- * Design: Neural Dark — Cyberpunk Minimalism
- * Home: Full landing page assembling all sections
- * Dark theme, electric blue accents, Space Grotesk + Work Sans + JetBrains Mono
- */
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import LogoStrip from "@/components/LogoStrip";
-import AboutSection from "@/components/AboutSection";
-import TechnologySection from "@/components/TechnologySection";
-import PipelineSection from "@/components/PipelineSection";
-import MarketSection from "@/components/MarketSection";
-import UseCasesSection from "@/components/UseCasesSection";
-import RoadmapSection from "@/components/RoadmapSection";
-import TeamSection from "@/components/TeamSection";
-import FooterSection from "@/components/FooterSection";
+import AffiliationMarquee from "@/components/site/AffiliationMarquee";
+import ApplicationsSection from "@/components/site/ApplicationsSection";
+import BrainViewport from "@/components/site/BrainViewport";
+import ContactFooter from "@/components/site/ContactFooter";
+import Hero from "@/components/site/Hero";
+import MarketSection from "@/components/site/MarketSection";
+import PipelineSection from "@/components/site/PipelineSection";
+import ProblemSection from "@/components/site/ProblemSection";
+import ProductSection from "@/components/site/ProductSection";
+import RoadmapSection from "@/components/site/RoadmapSection";
+import SiteNav from "@/components/site/SiteNav";
+import TeamSection from "@/components/site/TeamSection";
+import VisionSection from "@/components/site/VisionSection";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
-      <HeroSection />
-      <LogoStrip />
-      <AboutSection />
-      <TechnologySection />
-      <PipelineSection />
-      <MarketSection />
-      <UseCasesSection />
-      <RoadmapSection />
-      <TeamSection />
-      <FooterSection />
+    <div className="min-h-screen bg-ink text-paper">
+      <SiteNav />
+      <main>
+        <Hero />
+        <BrainViewport />
+        <AffiliationMarquee />
+        <ProblemSection />
+        <VisionSection />
+        <ProductSection />
+        <PipelineSection />
+        <MarketSection />
+        <ApplicationsSection />
+        <RoadmapSection />
+        <TeamSection />
+      </main>
+      <ContactFooter />
     </div>
   );
 }
