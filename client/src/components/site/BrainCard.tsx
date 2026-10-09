@@ -125,7 +125,6 @@ export default function BrainCard({ className = "" }: { className?: string }) {
               <RotateCcw className="size-4" aria-hidden="true" />
               Rebuild the brain
             </button>
-            <p className="text-xs text-slate">Leave the pieces alone for 5 seconds and it puts itself back together.</p>
           </motion.div>
         )}
       </AnimatePresence>

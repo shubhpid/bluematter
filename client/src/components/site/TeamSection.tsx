@@ -61,7 +61,7 @@ export default function TeamSection() {
   };
 
   return (
-    <section id="team" aria-labelledby="team-title" className="py-24 md:py-32">
+    <section id="team" data-no-snap aria-labelledby="team-title" className="py-24 md:py-32">
       <div className="container flex flex-col gap-14">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
           <div className="flex flex-col gap-6">

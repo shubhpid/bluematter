@@ -3,54 +3,43 @@ import "lenis/dist/lenis.css";
 import { useEffect } from "react";
 
 /** How long scrolling must be still before a snap is considered. */
-const SETTLE_MS = 160;
-/** Only snap when a section edge is within this fraction of the viewport. Anything farther stays where the user left it. */
-const SNAP_RANGE = 0.28;
+const SETTLE_MS = 140;
+/** Only glide to a section top that is already this close ahead (fraction of viewport). Farther away, the page stays put. */
+const SNAP_RANGE = 0.22;
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
 /**
- * Free, fast Lenis scrolling with a lenient snap (scale.com-style): the page moves at native
- * speed while the user scrolls, then, once it settles, eases onto a nearby section edge.
- * Long sections can be read freely from top to bottom without being pulled away.
+ * Free, fast Lenis scrolling with a passive, forward-only snap: once the user stops, the page
+ * finishes the last few pixels onto the next section top in the direction they were already
+ * scrolling. It never pulls back to a section they have passed, and sections marked
+ * `data-no-snap` are skipped entirely.
  */
 export default function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const els = Array.from(document.querySelectorAll<HTMLElement>("main > section, [data-page]"));
     const lenis = new Lenis({ autoRaf: true, lerp: 0.11, wheelMultiplier: 1.15, anchors: { duration: 0.9, easing: easeOutCubic } });
 
     let timer = 0;
     let snapping = false;
+    let direction = 0;
 
-    const snapPoints = () => {
-      const vh = window.innerHeight;
-      const points: number[] = [];
-      for (const el of els) {
-        const top = Math.round(el.getBoundingClientRect().top + window.scrollY);
-        points.push(top);
-        if (el.offsetHeight > vh + 4) points.push(top + el.offsetHeight - vh);
-      }
-      return points.map((p) => Math.min(p, lenis.limit));
-    };
+    const snapPoints = () =>
+      Array.from(document.querySelectorAll<HTMLElement>("main > section, [data-page]"))
+        .filter((el) => !el.hasAttribute("data-no-snap"))
+        .map((el) => Math.min(Math.round(el.getBoundingClientRect().top + lenis.scroll), lenis.limit));
 
     const trySnap = () => {
-      if (snapping || lenis.isStopped) return;
+      if (snapping || lenis.isStopped || direction === 0) return;
       const y = lenis.scroll;
       const range = window.innerHeight * SNAP_RANGE;
-      let best = y;
-      let bestDist = Infinity;
-      for (const p of snapPoints()) {
-        const d = Math.abs(p - y);
-        if (d < bestDist) {
-          bestDist = d;
-          best = p;
-        }
-      }
-      if (bestDist < 2 || bestDist > range) return;
+      const ahead = snapPoints().filter((p) => (direction > 0 ? p > y + 1 : p < y - 1));
+      if (ahead.length === 0) return;
+      const target = direction > 0 ? Math.min(...ahead) : Math.max(...ahead);
+      if (Math.abs(target - y) > range) return;
       snapping = true;
-      lenis.scrollTo(best, {
-        duration: 0.7,
+      lenis.scrollTo(target, {
+        duration: 0.55,
         easing: easeOutCubic,
         onComplete: () => {
           snapping = false;
@@ -62,21 +51,23 @@ export default function SmoothScroll() {
       window.clearTimeout(timer);
       timer = window.setTimeout(trySnap, SETTLE_MS);
     };
+
+    lenis.on("scroll", () => {
+      if (snapping) return;
+      if (lenis.direction) direction = lenis.direction;
+      schedule();
+    });
     const onUserInput = () => {
       snapping = false;
       schedule();
     };
-
-    lenis.on("scroll", () => {
-      if (!snapping) schedule();
-    });
     window.addEventListener("wheel", onUserInput, { passive: true });
-    window.addEventListener("touchend", onUserInput, { passive: true });
+    window.addEventListener("touchstart", onUserInput, { passive: true });
 
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener("wheel", onUserInput);
-      window.removeEventListener("touchend", onUserInput);
+      window.removeEventListener("touchstart", onUserInput);
       lenis.destroy();
     };
   }, []);
