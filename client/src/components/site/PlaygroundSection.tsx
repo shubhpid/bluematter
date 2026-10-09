@@ -15,8 +15,7 @@ export default function PlaygroundSection() {
           </h2>
           <Reveal delay={0.15}>
             <p className="max-w-md text-pretty leading-relaxed text-slate-light">
-              Drag to spin it. Shake it hard enough and find out what happens. Click anywhere in the field to send a
-              pulse through it.
+              Drag it. Shake it. See what happens.
             </p>
           </Reveal>
         </div>

@@ -2,92 +2,83 @@ import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { useEffect } from "react";
 
-type Page = { top: number; end: number };
-
-const PAGE_DURATION = 1.05;
-/** A wheel gesture must go quiet this long before it can turn the next page (swallows trackpad inertia). */
-const GESTURE_GAP = 220;
-const easeInOutQuart = (t: number) => (t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2);
+/** How long scrolling must be still before a snap is considered. */
+const SETTLE_MS = 160;
+/** Only snap when a section edge is within this fraction of the viewport. Anything farther stays where the user left it. */
+const SNAP_RANGE = 0.28;
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
 /**
- * Full-page section paging on top of Lenis. One wheel gesture moves exactly one section.
- * Sections taller than the viewport (hero, pipeline rail) scroll freely inside, clamped to
- * their own bounds, and only page onward after a fresh gesture at their edge.
- * Touch keeps native scrolling.
+ * Free, fast Lenis scrolling with a lenient snap (scale.com-style): the page moves at native
+ * speed while the user scrolls, then, once it settles, eases onto a nearby section edge.
+ * Long sections can be read freely from top to bottom without being pulled away.
  */
 export default function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const els = Array.from(document.querySelectorAll<HTMLElement>("main > section, [data-page]"));
-    let paging = false;
-    let lastWheelAt = 0;
-    let edgeHeldUntil = 0;
+    const lenis = new Lenis({ autoRaf: true, lerp: 0.11, wheelMultiplier: 1.15, anchors: { duration: 0.9, easing: easeOutCubic } });
 
-    const measure = (limit: number): Page[] =>
-      els.map((el) => {
-        const top = Math.min(el.getBoundingClientRect().top + window.scrollY, limit);
-        const end = Math.min(Math.max(top, top + el.offsetHeight - window.innerHeight), limit);
-        return { top: Math.round(top), end: Math.round(end) };
-      });
+    let timer = 0;
+    let snapping = false;
 
-    let lenis: Lenis;
+    const snapPoints = () => {
+      const vh = window.innerHeight;
+      const points: number[] = [];
+      for (const el of els) {
+        const top = Math.round(el.getBoundingClientRect().top + window.scrollY);
+        points.push(top);
+        if (el.offsetHeight > vh + 4) points.push(top + el.offsetHeight - vh);
+      }
+      return points.map((p) => Math.min(p, lenis.limit));
+    };
 
-    const pageTo = (target: number) => {
-      paging = true;
-      lenis.scrollTo(target, {
-        duration: PAGE_DURATION,
-        easing: easeInOutQuart,
-        lock: true,
-        force: true,
+    const trySnap = () => {
+      if (snapping || lenis.isStopped) return;
+      const y = lenis.scroll;
+      const range = window.innerHeight * SNAP_RANGE;
+      let best = y;
+      let bestDist = Infinity;
+      for (const p of snapPoints()) {
+        const d = Math.abs(p - y);
+        if (d < bestDist) {
+          bestDist = d;
+          best = p;
+        }
+      }
+      if (bestDist < 2 || bestDist > range) return;
+      snapping = true;
+      lenis.scrollTo(best, {
+        duration: 0.7,
+        easing: easeOutCubic,
         onComplete: () => {
-          paging = false;
+          snapping = false;
         },
       });
     };
 
-    const onWheel = ({ deltaY, event }: { deltaY: number; event: WheelEvent | TouchEvent }) => {
-      if (event.type.startsWith("touch")) return true;
-      if (event.cancelable) event.preventDefault();
-
-      const now = performance.now();
-      const freshGesture = now - lastWheelAt > GESTURE_GAP;
-      lastWheelAt = now;
-      if (paging || Math.abs(deltaY) < 1) return false;
-
-      const pages = measure(lenis.limit);
-      const y = lenis.targetScroll;
-      let i = 0;
-      for (let k = 0; k < pages.length; k++) if (pages[k].top <= y + 2) i = k;
-      const page = pages[i];
-
-      if (deltaY > 0) {
-        if (y < page.end - 1) {
-          const next = Math.min(y + deltaY, page.end);
-          if (next >= page.end) edgeHeldUntil = now + GESTURE_GAP;
-          lenis.scrollTo(next, { lerp: 0.12, force: true });
-          return false;
-        }
-        if (!freshGesture && now < edgeHeldUntil + GESTURE_GAP) return false;
-        const target = pages[i + 1]?.top ?? lenis.limit;
-        if (target > y + 1) pageTo(target);
-      } else {
-        if (y > page.top + 1) {
-          const next = Math.max(y + deltaY, page.top);
-          if (next <= page.top) edgeHeldUntil = now + GESTURE_GAP;
-          lenis.scrollTo(next, { lerp: 0.12, force: true });
-          return false;
-        }
-        if (!freshGesture && now < edgeHeldUntil + GESTURE_GAP) return false;
-        const prev = pages[i - 1];
-        if (prev) pageTo(prev.end);
-      }
-      return false;
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(trySnap, SETTLE_MS);
+    };
+    const onUserInput = () => {
+      snapping = false;
+      schedule();
     };
 
-    lenis = new Lenis({ autoRaf: true, lerp: 0.12, anchors: { duration: PAGE_DURATION, easing: easeInOutQuart }, virtualScroll: onWheel });
+    lenis.on("scroll", () => {
+      if (!snapping) schedule();
+    });
+    window.addEventListener("wheel", onUserInput, { passive: true });
+    window.addEventListener("touchend", onUserInput, { passive: true });
 
-    return () => lenis.destroy();
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("wheel", onUserInput);
+      window.removeEventListener("touchend", onUserInput);
+      lenis.destroy();
+    };
   }, []);
   return null;
 }

@@ -18,7 +18,7 @@ function Word({ word, progress, range }: { word: string; progress: MotionValue<n
 /** Scroll-scrubbed statement: words light up as the reader moves through the section. */
 export default function StatementSection() {
   const ref = useRef<HTMLParagraphElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.95", "start 0.3"] });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.9", "end 0.45"] });
   const words = statement.split(" ");
 
   return (

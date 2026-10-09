@@ -31,6 +31,27 @@ export function Reveal({
   );
 }
 
+/**
+ * Slides its content in horizontally from off-screen left. The in-view check runs on the untransformed
+ * wrapper, because an element parked at -110vw never intersects the viewport.
+ */
+export function SlideIn({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.2 });
+  const reduce = useReducedMotion();
+  return (
+    <div ref={ref} className={className}>
+      <motion.div
+        initial={reduce ? false : { x: "-110vw" }}
+        animate={inView || reduce ? { x: 0 } : { x: "-110vw" }}
+        transition={{ duration: 1.1, delay, ease: EASE }}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+}
+
 /** Word-by-word blur-up headline reveal, in the style of scale.com hero copy. */
 export function SplitWords({
   text,

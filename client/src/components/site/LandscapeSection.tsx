@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import { AlertTriangle, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { EASE, Reveal } from "./motion";
+import { EASE, Reveal, SlideIn } from "./motion";
 
 type Device = {
   id: string;
@@ -321,26 +321,15 @@ export default function LandscapeSection() {
   return (
     <section ref={sectionRef} aria-labelledby="landscape-title" className="overflow-x-clip py-24 md:py-32">
       <div className="container flex flex-col gap-14">
-        <motion.p
-          initial={reduce ? false : { x: "-110vw" }}
-          whileInView={{ x: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 1.1, ease: EASE }}
-          className="type-h1 text-5xl text-signal md:text-7xl"
-        >
-          The Market
-        </motion.p>
+        <SlideIn>
+          <p className="type-h1 text-5xl text-signal md:text-7xl">The Market.</p>
+        </SlideIn>
         <div className="-mt-6 grid gap-8 lg:grid-cols-2 lg:items-end">
-          <motion.h2
-            id="landscape-title"
-            initial={reduce ? false : { x: "-110vw" }}
-            whileInView={{ x: 0 }}
-            viewport={{ once: true, amount: 0 }}
-            transition={{ duration: 1.3, ease: EASE }}
-            className="type-h2 text-balance text-4xl text-paper md:text-6xl"
-          >
-            Every other path to your brain asks for something.
-          </motion.h2>
+          <SlideIn delay={0.12}>
+            <h2 id="landscape-title" className="type-h2 text-balance text-4xl text-paper md:text-6xl">
+              Every other path to your brain asks for something.
+            </h2>
+          </SlideIn>
           <Reveal delay={0.1}>
             <p className="max-w-lg text-pretty text-lg leading-relaxed text-slate-light">
               Implants ask for surgery. Lab systems ask for gel, wires and a technician. Consumer headsets give up

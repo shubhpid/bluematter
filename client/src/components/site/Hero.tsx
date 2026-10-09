@@ -16,7 +16,7 @@ export default function Hero() {
   const cardOpacity = useTransform(scrollYProgress, [0.55, 1], [1, 0.35]);
 
   return (
-    <section ref={ref} id="top" aria-label="Introduction" className="relative h-[170svh]">
+    <section ref={ref} id="top" aria-label="Introduction" className="relative h-[140svh]">
       <div className="sticky top-0 flex h-[100svh] flex-col px-2 pb-2 pt-20 md:px-6 md:pb-6">
         <motion.div
           style={reduce ? undefined : { scale: cardScale, opacity: cardOpacity }}
