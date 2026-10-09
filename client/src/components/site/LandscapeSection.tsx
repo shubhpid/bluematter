@@ -324,9 +324,9 @@ export default function LandscapeSection() {
         <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
           <motion.h2
             id="landscape-title"
-            initial={reduce ? false : { x: "-110vw", opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            viewport={{ once: true, margin: "-80px" }}
+            initial={reduce ? false : { x: "-110vw" }}
+            whileInView={{ x: 0 }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 1.3, ease: EASE }}
             className="type-h2 text-balance text-4xl text-paper md:text-6xl"
           >

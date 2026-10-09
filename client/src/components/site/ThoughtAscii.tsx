@@ -52,6 +52,16 @@ export default function ThoughtAscii() {
   const [word, setWord] = useState("think");
   const preRef = useRef<HTMLPreElement>(null);
   const inputId = useId();
+  const [pressed, setPressed] = useState(false);
+  const resetRef = useRef<number | undefined>(undefined);
+
+  const pressMindButton = () => {
+    setPressed(true);
+    window.clearTimeout(resetRef.current);
+    resetRef.current = window.setTimeout(() => setPressed(false), 2600);
+  };
+
+  useEffect(() => () => window.clearTimeout(resetRef.current), []);
 
   useEffect(() => {
     const pre = preRef.current;
@@ -83,7 +93,20 @@ export default function ThoughtAscii() {
   }, [word]);
 
   return (
-    <div className="flex h-full flex-col justify-between gap-8 rounded-lg border border-ink-line bg-ink-raised/80 p-6 backdrop-blur-sm md:p-8">
+    <div className="flex h-full flex-col gap-6 rounded-lg border border-ink-line bg-ink-raised/80 p-6 backdrop-blur-sm md:p-8">
+      <div className="flex min-h-36 flex-1 items-center justify-center">
+        <button
+          type="button"
+          onClick={pressMindButton}
+          aria-live="polite"
+          className={`min-h-24 w-full rounded-lg bg-signal px-6 text-xl font-semibold tracking-tight text-ink shadow-[0_0_0_1px_rgba(0,163,255,0.4),0_20px_60px_-20px_rgba(0,163,255,0.7)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 active:scale-[0.99] md:text-2xl ${
+            pressed ? "bg-signal-deep text-paper" : ""
+          }`}
+        >
+          {pressed ? "...but nothing happened" : "Read my mind"}
+        </button>
+      </div>
+
       <div className="flex flex-col gap-3">
         <h3 className="type-h3 text-2xl text-paper">Think of a word.</h3>
         <p className="text-pretty text-sm leading-relaxed text-slate-light">

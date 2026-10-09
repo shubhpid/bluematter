@@ -1,7 +1,6 @@
 import { motion, useMotionTemplate, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import AffiliationMarquee from "./AffiliationMarquee";
-import { EASE, SplitWords } from "./motion";
 
 /** scale.com-style opener: a single sentence that lifts away as the reader starts scrolling. */
 export default function Hero() {
@@ -15,7 +14,6 @@ export default function Hero() {
   const filter = useMotionTemplate`blur(${textBlur}px)`;
   const cardScale = useTransform(scrollYProgress, [0.35, 1], [1, 0.92]);
   const cardOpacity = useTransform(scrollYProgress, [0.55, 1], [1, 0.35]);
-  const cueOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
 
   return (
     <section ref={ref} id="top" aria-label="Introduction" className="relative h-[170svh]">
@@ -26,34 +24,14 @@ export default function Hero() {
         >
           <div className="grid-lines-light pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
 
-          <div className="container relative flex flex-1 items-center">
+          <div className="container relative flex flex-1 items-center justify-center">
             <motion.h1
               style={reduce ? undefined : { y: textY, opacity: textOpacity, filter }}
-              className="type-h1 max-w-6xl text-balance text-4xl leading-[1.08] sm:text-5xl md:text-6xl xl:text-7xl"
+              className="type-h1 mx-auto max-w-6xl text-balance text-center text-4xl leading-[1.08] sm:text-5xl md:text-6xl xl:text-7xl"
             >
-              <SplitWords text="Your thoughts, wirelessly and instantly connected to" immediate delay={0.15} stagger={0.05} />
-              <br />
-              <SplitWords text="everything you own." immediate delay={0.6} className="text-signal-deep" />
+              Your thoughts, wirelessly and instantly connected to <span className="text-signal-deep">everything you own.</span>
             </motion.h1>
           </div>
-
-          <motion.a
-            href="#playground"
-            style={{ opacity: cueOpacity }}
-            initial={{ y: 12 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.8, delay: 1.3, ease: EASE }}
-            className="container relative hidden items-center gap-3 pb-6 text-sm font-semibold text-slate transition-colors hover:text-paper-ink md:flex"
-          >
-            <span className="flex h-9 w-5 justify-center rounded-full border border-paper-line pt-1.5">
-              <motion.span
-                className="size-1.5 rounded-full bg-signal-deep"
-                animate={reduce ? undefined : { y: [0, 12, 0], opacity: [1, 0.3, 1] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </span>
-            Scroll
-          </motion.a>
 
           <AffiliationMarquee />
         </motion.div>

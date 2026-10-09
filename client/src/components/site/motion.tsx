@@ -48,6 +48,33 @@ export function SplitWords({
   const reduce = useReducedMotion();
   const words = text.split(" ");
   const target = { opacity: 1, y: "0%", filter: "blur(0px)" };
+
+  if (!immediate) {
+    return (
+      <span className={className}>
+        <span className="sr-only">{text}</span>
+        <motion.span
+          aria-hidden="true"
+          initial={reduce ? false : "hidden"}
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          {words.map((word, i) => (
+            <motion.span
+              key={`${word}-${i}`}
+              className="inline-block"
+              variants={{ hidden: { x: "-100vw" }, show: { x: 0 } }}
+              transition={{ duration: 1.1, delay: delay + i * stagger, ease: EASE }}
+            >
+              {word}
+              {i < words.length - 1 ? "\u00A0" : ""}
+            </motion.span>
+          ))}
+        </motion.span>
+      </span>
+    );
+  }
+
   return (
     <span className={className}>
       <span className="sr-only">{text}</span>

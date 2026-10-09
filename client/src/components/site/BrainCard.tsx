@@ -44,6 +44,21 @@ export default function BrainCard({ className = "" }: { className?: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [explosion, rebuild]);
 
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!explosion || !card) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) return;
+        setExplosion(null);
+        setReturning(false);
+      },
+      { threshold: 0 },
+    );
+    io.observe(card);
+    return () => io.disconnect();
+  }, [explosion]);
+
   const exploded = explosion !== null;
 
   return (
@@ -57,8 +72,7 @@ export default function BrainCard({ className = "" }: { className?: string }) {
       <Corner className="bottom-3 left-3 border-b border-l" />
       <Corner className="bottom-3 right-3 border-b border-r" />
 
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between px-8 pt-5 text-[11px] font-semibold uppercase tracking-widest text-slate">
-        <span>Cortex / 3D</span>
+      <div className="absolute inset-x-0 top-0 flex items-center justify-end px-8 pt-5 text-[11px] font-semibold uppercase tracking-widest text-slate">
         <span className="hidden sm:inline">Drag to spin · Shake to stress-test</span>
       </div>
 
@@ -86,9 +100,6 @@ export default function BrainCard({ className = "" }: { className?: string }) {
             className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-6 text-center"
           >
             <p className="type-h3 text-balance text-2xl text-paper md:text-3xl">You blew its mind.</p>
-            <p className="max-w-xs text-pretty text-sm leading-relaxed text-slate-light">
-              The fragments are loose on the page. Chase them with your cursor — they will not let you catch them.
-            </p>
             <button
               type="button"
               onClick={rebuild}

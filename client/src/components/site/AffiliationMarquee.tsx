@@ -58,7 +58,7 @@ export default function AffiliationMarquee() {
         {overflowing ? (
           <ul className="marquee-track flex w-max items-center gap-14">
             {loop.map((item, i) => (
-              <li key={`${item.name}-${i}`} aria-hidden={i >= items.length} className="flex items-center gap-3 opacity-70">
+              <li key={`${item.name}-${i}`} aria-hidden={i >= items.length} className="flex items-center gap-3">
                 <Item {...item} />
               </li>
             ))}
@@ -66,10 +66,7 @@ export default function AffiliationMarquee() {
         ) : (
           <ul className="flex items-center gap-14">
             {items.map((item) => (
-              <li
-                key={item.name}
-                className="flex items-center gap-3 opacity-70 grayscale transition-all duration-500 hover:opacity-100 hover:grayscale-0"
-              >
+              <li key={item.name} className="flex items-center gap-3">
                 <Item {...item} />
               </li>
             ))}
