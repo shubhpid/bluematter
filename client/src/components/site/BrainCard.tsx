@@ -6,10 +6,14 @@ import AsciiExplosion from "./AsciiExplosion";
 import { EASE } from "./motion";
 
 const METER_CELLS = 14;
-const SCROLL_KEYS = new Set(["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"]);
 
 function Corner({ className }: { className: string }) {
-  return <span aria-hidden="true" className={`absolute size-4 border-signal ${className}`} />;
+  return (
+    <span
+      aria-hidden="true"
+      className={`absolute size-4 border-signal ${className}`}
+    />
+  );
 }
 
 /** Framed, interactive ASCII brain. Drag to spin; shake hard enough and it blows apart across the page. */
@@ -28,7 +32,10 @@ export default function BrainCard({ className = "" }: { className?: string }) {
     meter.style.color = level > 0.7 ? "#f8fafc" : level > 0.05 ? "#00a3ff" : "";
     if (cardRef.current) {
       const j = level * level * 4;
-      cardRef.current.style.transform = j > 0.2 ? `translate(${(Math.random() - 0.5) * j}px, ${(Math.random() - 0.5) * j}px)` : "";
+      cardRef.current.style.transform =
+        j > 0.2
+          ? `translate(${(Math.random() - 0.5) * j}px, ${(Math.random() - 0.5) * j}px)`
+          : "";
     }
   }, []);
 
@@ -38,26 +45,14 @@ export default function BrainCard({ className = "" }: { className?: string }) {
     setReturning(false);
   }, []);
 
-  // While fragments are loose, any attempt to scroll rebuilds the brain first; scrolling resumes once it's whole.
   useEffect(() => {
     if (!explosion) return;
-    const block = (e: Event) => {
-      if (e.cancelable) e.preventDefault();
-      e.stopImmediatePropagation();
-      rebuild();
-    };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") rebuild();
-      else if (SCROLL_KEYS.has(e.key)) block(e);
     };
-    const opts = { capture: true, passive: false } as const;
-    window.addEventListener("wheel", block, opts);
-    window.addEventListener("touchmove", block, opts);
-    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("wheel", block, opts);
-      window.removeEventListener("touchmove", block, opts);
-      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("keydown", onKey);
     };
   }, [explosion, rebuild]);
 
@@ -70,7 +65,7 @@ export default function BrainCard({ className = "" }: { className?: string }) {
         setExplosion(null);
         setReturning(false);
       },
-      { threshold: 0 },
+      { threshold: 0 }
     );
     io.observe(card);
     return () => io.disconnect();
@@ -90,7 +85,9 @@ export default function BrainCard({ className = "" }: { className?: string }) {
       <Corner className="bottom-3 right-3 border-b border-r" />
 
       <div className="absolute inset-x-0 top-0 flex items-center justify-end px-8 pt-5 text-[11px] font-semibold uppercase tracking-widest text-slate">
-        <span className="hidden sm:inline">Drag to spin · Shake to stress-test</span>
+        <span className="hidden sm:inline">
+          Drag to spin · Shake to stress-test
+        </span>
       </div>
 
       <div
@@ -116,7 +113,9 @@ export default function BrainCard({ className = "" }: { className?: string }) {
             transition={{ duration: 0.6, delay: 0.5, ease: EASE }}
             className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-6 text-center"
           >
-            <p className="type-h3 text-balance text-2xl text-paper md:text-3xl">You blew its mind.</p>
+            <p className="type-h3 text-balance text-2xl text-paper md:text-3xl">
+              You blew its mind.
+            </p>
             <button
               type="button"
               onClick={rebuild}
@@ -130,18 +129,29 @@ export default function BrainCard({ className = "" }: { className?: string }) {
       </AnimatePresence>
 
       <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 px-8 pb-4 text-[11px] font-semibold uppercase tracking-widest text-slate">
-        <span className={`flex items-center gap-2 ${exploded ? "text-slate-light" : "text-signal"}`}>
+        <span
+          className={`flex items-center gap-2 ${exploded ? "text-slate-light" : "text-signal"}`}
+        >
           <span className="relative flex size-1.5">
             {!exploded && (
-              <span className="absolute inset-0 rounded-full bg-signal" style={{ animation: "pulse-ring 2s ease-out infinite" }} />
+              <span
+                className="absolute inset-0 rounded-full bg-signal"
+                style={{ animation: "pulse-ring 2s ease-out infinite" }}
+              />
             )}
-            <span className={`relative size-1.5 rounded-full ${exploded ? "bg-slate" : "bg-signal"}`} />
+            <span
+              className={`relative size-1.5 rounded-full ${exploded ? "bg-slate" : "bg-signal"}`}
+            />
           </span>
           {exploded ? "Signal lost" : "Streaming"}
         </span>
         <span className="flex items-center gap-2">
           <span className="hidden sm:inline">Stress</span>
-          <span ref={meterRef} className="font-mono normal-case tracking-normal transition-colors" aria-hidden="true">
+          <span
+            ref={meterRef}
+            className="font-mono normal-case tracking-normal transition-colors"
+            aria-hidden="true"
+          >
             {`[${".".repeat(METER_CELLS)}]`}
           </span>
         </span>

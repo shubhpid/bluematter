@@ -34,20 +34,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check types
+        run: pnpm check
+
       - name: Build
         run: pnpm vite build
         env:
-          # Add your env vars as GitHub secrets, then reference them here:
-          # VITE_FRONTEND_FORGE_API_KEY: ${{ secrets.VITE_FRONTEND_FORGE_API_KEY }}
-          # VITE_FRONTEND_FORGE_API_URL: ${{ secrets.VITE_FRONTEND_FORGE_API_URL }}
-          # VITE_OAUTH_PORTAL_URL: ${{ secrets.VITE_OAUTH_PORTAL_URL }}
-          # VITE_APP_ID: ${{ secrets.VITE_APP_ID }}
           NODE_ENV: production
 
       - name: Copy 404.html for SPA routing
         run: cp dist/public/index.html dist/public/404.html
 
-        # Add this step right here to stop GitHub from deleting files with underscores!
       - name: Disable Jekyll processing
         run: touch dist/public/.nojekyll
 

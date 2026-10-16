@@ -1,5 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import "tailwindcss" source(none);
+@source "./";
+@source "../index.html";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -84,6 +85,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+    overflow-x: clip;
   }
   ::selection {
     background: #00a3ff;
@@ -206,8 +208,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
   html {
     scroll-behavior: auto;

@@ -1,10 +1,15 @@
-import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
 import { useRef, useState, type PointerEvent } from "react";
-import erik from "../assets/erik-headshot.png";
-import lucca from "../assets/lucca-headshot.jpg";
-import saee from "../assets/saee-headshot.jpg";
-import taylor from "../assets/taylor-foster-headshot.png";
-import tyler from "../assets/tyler-headshot.png";
+import erik from "../assets/erik-headshot.webp";
+import lucca from "../assets/lucca-headshot.webp";
+import saee from "../assets/saee-headshot.webp";
+import taylor from "../assets/taylor-foster-headshot.webp";
+import tyler from "../assets/tyler-headshot.webp";
 import { Reveal, SplitWords } from "./motion";
 
 const team = [
@@ -13,7 +18,8 @@ const team = [
     role: "Project & Software Development Lead",
     dept: "Biomedical Engineering",
     photo: erik,
-    focus: "Project direction, system design, and signal processing architecture",
+    focus:
+      "Project direction, system design, and signal processing architecture",
   },
   {
     name: "Tyler Santos",
@@ -61,18 +67,27 @@ export default function TeamSection() {
   };
 
   return (
-    <section id="team" data-no-snap aria-labelledby="team-title" className="py-24 md:py-32">
+    <section
+      id="team"
+      data-no-snap
+      aria-labelledby="team-title"
+      className="py-24 md:py-32"
+    >
       <div className="container flex flex-col gap-14">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
           <div className="flex flex-col gap-6">
-            <h2 id="team-title" className="type-h2 text-balance text-4xl text-paper md:text-6xl">
+            <h2
+              id="team-title"
+              className="type-h2 text-balance text-4xl text-paper md:text-6xl"
+            >
               <SplitWords text="The minds behind it." />
             </h2>
           </div>
           <Reveal delay={0.1}>
             <p className="max-w-lg text-pretty text-lg leading-relaxed text-slate-light">
-              A multidisciplinary team of Arizona State University engineers working across electrical, biomedical,
-              and human systems engineering through The Luminosity Lab.
+              A multidisciplinary team of Arizona State University engineers
+              working across electrical, biomedical, and human systems
+              engineering through The Luminosity Lab.
             </p>
           </Reveal>
         </div>
@@ -88,6 +103,7 @@ export default function TeamSection() {
               <motion.img
                 key="portrait"
                 src={team[hovered].photo}
+                decoding="async"
                 alt=""
                 aria-hidden="true"
                 style={{ x, y, translateX: "-50%", translateY: "-50%" }}
@@ -112,14 +128,30 @@ export default function TeamSection() {
                   hovered !== null && hovered !== i ? "lg:opacity-35" : ""
                 }`}
               >
-                <img src={m.photo} alt={m.name} className="size-14 rounded-md object-cover lg:hidden" />
-                <h3 className="type-h3 hidden text-3xl text-paper lg:block lg:text-4xl">{m.name}</h3>
+                <img
+                  src={m.photo}
+                  alt={m.name}
+                  loading="lazy"
+                  decoding="async"
+                  width={56}
+                  height={56}
+                  className="size-14 rounded-md object-cover lg:hidden"
+                />
+                <h3 className="type-h3 hidden text-3xl text-paper lg:block lg:text-4xl">
+                  {m.name}
+                </h3>
                 <div className="flex flex-col gap-1">
-                  <span className="type-h3 text-2xl text-paper lg:hidden">{m.name}</span>
+                  <span className="type-h3 text-2xl text-paper lg:hidden">
+                    {m.name}
+                  </span>
                   <span className="font-semibold text-signal">{m.role}</span>
-                  <span className="text-sm leading-relaxed text-slate-light">{m.focus}</span>
+                  <span className="text-sm leading-relaxed text-slate-light">
+                    {m.focus}
+                  </span>
                 </div>
-                <span className="text-sm font-semibold text-slate md:text-right">{m.dept}</span>
+                <span className="text-sm font-semibold text-slate md:text-right">
+                  {m.dept}
+                </span>
               </div>
             </Reveal>
           ))}

@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 const RAMP = " .:-=+*#%@";
 const COLS = 56;
 const ROWS = 13;
+const UNRESOLVED_START = 50;
 const SUB_X = 4;
 const SUB_Y = 8;
 
@@ -66,7 +67,9 @@ export default function ThoughtAscii() {
   useEffect(() => {
     const pre = preRef.current;
     if (!pre) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     const target = rasterize(word.trim());
     if (reduce) {
       pre.textContent = target.join("\n");
@@ -77,13 +80,19 @@ export default function ThoughtAscii() {
     let raf = 0;
     const frame = (now: number) => {
       const p = Math.min(1, (now - start) / duration);
-      const out = target.map((line) =>
+      const out = target.map(line =>
         Array.from(line, (ch, c) => {
-          const settleAt = c / COLS;
+          // Leave just the last six columns partially scrambled when decoding ends.
+          const settleAt = ((c + 1) / UNRESOLVED_START) * 0.75;
           if (p >= settleAt + 0.25) return ch;
-          if (p < settleAt * 0.6) return Math.random() < 0.04 ? RAMP[1 + Math.floor(Math.random() * 3)] : " ";
-          return ch === " " && Math.random() < 0.6 ? " " : RAMP[1 + Math.floor(Math.random() * (RAMP.length - 1))];
-        }).join(""),
+          if (p < settleAt * 0.6)
+            return Math.random() < 0.04
+              ? RAMP[1 + Math.floor(Math.random() * 3)]
+              : " ";
+          return ch === " " && Math.random() < 0.6
+            ? " "
+            : RAMP[1 + Math.floor(Math.random() * (RAMP.length - 1))];
+        }).join("")
       );
       pre.textContent = out.join("\n");
       if (p < 1) raf = requestAnimationFrame(frame);
@@ -106,7 +115,9 @@ export default function ThoughtAscii() {
           {pressed ? (
             <span className="flex flex-col items-center gap-1">
               <span>...but nothing happened</span>
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-paper/70">(coming soon!)</span>
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-paper/70">
+                (coming soon!)
+              </span>
             </span>
           ) : (
             "Read my mind"
@@ -117,7 +128,8 @@ export default function ThoughtAscii() {
       <div className="flex flex-col gap-3">
         <h3 className="type-h3 text-2xl text-paper">Think of a word.</h3>
         <p className="text-pretty text-sm leading-relaxed text-slate-light">
-          Type anything and watch it get decoded. One day the keyboard part will be optional.
+          Type anything and watch it get decoded. One day the keyboard part will
+          be optional.
         </p>
       </div>
 
@@ -143,7 +155,7 @@ export default function ThoughtAscii() {
             id={inputId}
             value={word}
             maxLength={12}
-            onChange={(e) => setWord(e.target.value)}
+            onChange={e => setWord(e.target.value)}
             spellCheck={false}
             autoComplete="off"
             placeholder="type a thought"

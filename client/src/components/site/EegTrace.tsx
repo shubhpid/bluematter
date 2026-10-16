@@ -17,10 +17,16 @@ export default function EegTrace({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionPreference = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
 
     let w = 0;
     let h = 0;
+    let visible = false;
+    let raf = 0;
+    let lastFrame = 0;
+    let t = 0;
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio, 2);
       w = canvas.clientWidth;
@@ -28,10 +34,8 @@ export default function EegTrace({
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      updateAnimation();
     };
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
 
     const seeds = Array.from({ length: channels }, (_, i) => ({
       f1: 0.018 + i * 0.006,
@@ -40,11 +44,7 @@ export default function EegTrace({
       amp: 0.55 + (i % 2) * 0.25,
     }));
 
-    let raf = 0;
-    let t = 0;
     const draw = () => {
-      raf = requestAnimationFrame(draw);
-      if (!reduce) t += 1.6;
       ctx.clearRect(0, 0, w, h);
       const band = h / channels;
       seeds.forEach((s, c) => {
@@ -52,7 +52,8 @@ export default function EegTrace({
         ctx.beginPath();
         for (let x = 0; x <= w; x += 2) {
           const k = x + t;
-          const spike = Math.sin(k * 0.013 + c) > 0.985 ? Math.sin(k * 0.9) * 0.9 : 0;
+          const spike =
+            Math.sin(k * 0.013 + c) > 0.985 ? Math.sin(k * 0.9) * 0.9 : 0;
           const y =
             Math.sin(k * s.f1) * 0.45 +
             Math.sin(k * s.f2 + c) * 0.3 +
@@ -70,11 +71,39 @@ export default function EegTrace({
       });
       ctx.globalAlpha = 1;
     };
-    draw();
+    const tick = (now: number) => {
+      if (now - lastFrame >= 33) {
+        if (lastFrame) t += Math.min(now - lastFrame, 100) * 0.096;
+        lastFrame = now;
+        draw();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    function updateAnimation() {
+      cancelAnimationFrame(raf);
+      lastFrame = 0;
+      if (!visible || document.hidden || !w || !h) return;
+      draw();
+      if (!motionPreference.matches) raf = requestAnimationFrame(tick);
+    }
+
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      updateAnimation();
+    });
+    io.observe(canvas);
+    document.addEventListener("visibilitychange", updateAnimation);
+    motionPreference.addEventListener("change", updateAnimation);
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", updateAnimation);
+      motionPreference.removeEventListener("change", updateAnimation);
     };
   }, [channels, color]);
 

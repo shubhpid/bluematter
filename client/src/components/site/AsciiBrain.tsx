@@ -1,8 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { AsciiEffect } from "three/examples/jsm/effects/AsciiEffect.js";
 
-export type AsciiParticleSeed = { ch: string; x: number; y: number; weight: number };
+export type AsciiParticleSeed = {
+  ch: string;
+  x: number;
+  y: number;
+  weight: number;
+};
 export type ExplosionData = {
   chars: AsciiParticleSeed[];
   fontSize: number;
@@ -17,14 +22,21 @@ const MAX_PARTICLES = 1800;
 
 /** Ridged pseudo-noise used to carve gyri / sulci folds into the cortex surface. */
 function folds(x: number, y: number, z: number) {
-  const a = Math.sin(x * 7.1 + Math.sin(y * 5.3) * 1.6) * Math.cos(z * 6.4 + Math.sin(x * 4.2) * 1.4);
-  const b = Math.sin(y * 9.2 + Math.cos(z * 6.8) * 1.2) * Math.cos(x * 8.7 - z * 2.1);
+  const a =
+    Math.sin(x * 7.1 + Math.sin(y * 5.3) * 1.6) *
+    Math.cos(z * 6.4 + Math.sin(x * 4.2) * 1.4);
+  const b =
+    Math.sin(y * 9.2 + Math.cos(z * 6.8) * 1.2) * Math.cos(x * 8.7 - z * 2.1);
   const c = Math.sin(z * 11.3 + x * 3.1 + Math.sin(y * 7.7));
   return 1 - Math.abs(a * 0.55 + b * 0.3 + c * 0.15);
 }
 
-function buildHemisphere(side: 1 | -1) {
-  const geo = new THREE.SphereGeometry(1, 160, 120);
+function buildHemisphere(side: 1 | -1, compact: boolean) {
+  const geo = new THREE.SphereGeometry(
+    1,
+    compact ? 80 : 160,
+    compact ? 56 : 120
+  );
   const pos = geo.attributes.position;
   const v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
@@ -44,8 +56,8 @@ function buildHemisphere(side: 1 | -1) {
   return geo;
 }
 
-function buildCerebellum() {
-  const geo = new THREE.SphereGeometry(1, 96, 64);
+function buildCerebellum(compact: boolean) {
+  const geo = new THREE.SphereGeometry(1, compact ? 48 : 96, compact ? 32 : 64);
   const pos = geo.attributes.position;
   const v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
@@ -60,19 +72,22 @@ function buildCerebellum() {
 }
 
 /** Reads the characters currently rendered by the AsciiEffect along with their on-screen positions. */
-function captureChars(el: HTMLElement, host: HTMLElement): ExplosionData | null {
+function captureChars(
+  el: HTMLElement,
+  host: HTMLElement
+): ExplosionData | null {
   const td = el.querySelector("td");
   if (!td) return null;
   const lines = td.innerHTML
     .split(/<br\s*\/?>/i)
-    .map((l) => l.replace(/&nbsp;/g, " ").replace(/<[^>]+>/g, ""))
+    .map(l => l.replace(/&nbsp;/g, " ").replace(/<[^>]+>/g, ""))
     .filter((l, i, arr) => !(i === arr.length - 1 && l.trim() === ""));
   if (!lines.length) return null;
 
   const range = document.createRange();
   range.selectNodeContents(td);
   const r = range.getBoundingClientRect();
-  const cols = Math.max(...lines.map((l) => l.length));
+  const cols = Math.max(...lines.map(l => l.length));
   const cellW = r.width / Math.max(1, cols);
   const cellH = r.height / lines.length;
   const fontSize = parseFloat(getComputedStyle(td).fontSize) || 8;
@@ -96,7 +111,10 @@ function captureChars(el: HTMLElement, host: HTMLElement): ExplosionData | null 
   return {
     chars,
     fontSize,
-    center: { x: hostRect.left + hostRect.width / 2, y: hostRect.top + hostRect.height / 2 },
+    center: {
+      x: hostRect.left + hostRect.width / 2,
+      y: hostRect.top + hostRect.height / 2,
+    },
     hostRect,
   };
 }
@@ -117,6 +135,8 @@ export default function AsciiBrain({
   const explodedRef = useRef(exploded);
   const onShakeRef = useRef(onShake);
   const onExplodeRef = useRef(onExplode);
+  const wakeRef = useRef<() => void>(() => {});
+  const [unavailable, setUnavailable] = useState(false);
   explodedRef.current = exploded;
   onShakeRef.current = onShake;
   onExplodeRef.current = onExplode;
@@ -125,18 +145,42 @@ export default function AsciiBrain({
     const host = hostRef.current;
     if (!host) return;
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionPreference = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
+    const compact = window.matchMedia(
+      "(pointer: coarse), (max-width: 640px)"
+    ).matches;
     const width = () => Math.max(1, host.clientWidth);
     const height = () => Math.max(1, host.clientHeight);
     const hasSize = () => host.clientWidth > 8 && host.clientHeight > 8;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, width() / height(), 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(
+      38,
+      width() / height(),
+      0.1,
+      100
+    );
     camera.position.set(0, 0.15, 4.4);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false });
-    const effect = new AsciiEffect(renderer, RAMP, { invert: true, resolution: 0.17 });
-    effect.setSize(width(), height());
+    let renderer: THREE.WebGLRenderer | undefined;
+    let effect: AsciiEffect;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: false,
+        powerPreference: "low-power",
+      });
+      effect = new AsciiEffect(renderer, RAMP, {
+        invert: true,
+        resolution: compact ? 0.13 : 0.17,
+      });
+      effect.setSize(width(), height());
+    } catch {
+      renderer?.dispose();
+      setUnavailable(true);
+      return;
+    }
     const el = effect.domElement;
     el.style.color = "#00a3ff";
     el.style.backgroundColor = "transparent";
@@ -144,12 +188,19 @@ export default function AsciiBrain({
     el.setAttribute("aria-hidden", "true");
     host.appendChild(el);
 
-    const material = new THREE.MeshPhongMaterial({ color: 0xffffff, flatShading: false, shininess: 18 });
+    const material = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      flatShading: false,
+      shininess: 18,
+    });
     const brain = new THREE.Group();
-    brain.add(new THREE.Mesh(buildHemisphere(1), material));
-    brain.add(new THREE.Mesh(buildHemisphere(-1), material));
-    brain.add(new THREE.Mesh(buildCerebellum(), material));
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.09, 0.7, 24), material);
+    brain.add(new THREE.Mesh(buildHemisphere(1, compact), material));
+    brain.add(new THREE.Mesh(buildHemisphere(-1, compact), material));
+    brain.add(new THREE.Mesh(buildCerebellum(compact), material));
+    const stem = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.13, 0.09, 0.7, 24),
+      material
+    );
     stem.position.set(0, -0.75, -0.35);
     stem.rotation.x = 0.35;
     brain.add(stem);
@@ -178,11 +229,14 @@ export default function AsciiBrain({
       if (lastPX !== null) {
         const dx = e.clientX - lastPX;
         const dy = e.clientY - lastPY;
-        energy += Math.hypot(dx, dy);
-        if (dragging) spinVel += dx * 0.004;
+        if (!motionPreference.matches) {
+          energy += Math.hypot(dx, dy);
+          if (dragging) spinVel += dx * 0.004;
+        }
       }
       lastPX = e.clientX;
       lastPY = e.clientY;
+      wake();
     };
     const onPointerDown = (e: PointerEvent) => {
       dragging = true;
@@ -195,6 +249,7 @@ export default function AsciiBrain({
       targetX = 0;
       targetY = 0;
       lastPX = null;
+      wake();
     };
     host.addEventListener("pointermove", onPointerMove);
     host.addEventListener("pointerdown", onPointerDown);
@@ -202,14 +257,21 @@ export default function AsciiBrain({
     host.addEventListener("pointercancel", onPointerUp);
     host.addEventListener("pointerleave", onLeave);
 
-    let visible = true;
-    const io = new IntersectionObserver(([entry]) => (visible = entry.isIntersecting), { threshold: 0 });
+    let visible = false;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        updateAnimation();
+      },
+      { threshold: 0 }
+    );
     io.observe(host);
 
     const ro = new ResizeObserver(() => {
       camera.aspect = width() / height();
       camera.updateProjectionMatrix();
       effect.setSize(width(), height());
+      wake();
     });
     ro.observe(host);
 
@@ -217,10 +279,25 @@ export default function AsciiBrain({
     let last = 0;
     let spin = 0;
     let wasExploded = false;
+    function wake() {
+      if (!raf && visible && !document.hidden && hasSize())
+        raf = requestAnimationFrame(tick);
+    }
+    function updateAnimation() {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      last = 0;
+      wake();
+    }
     const tick = (t: number) => {
-      raf = requestAnimationFrame(tick);
-      if (!visible || !hasSize() || t - last < 33) return;
-      const dt = Math.min((t - last) / 1000, 0.1);
+      raf = 0;
+      if (!visible || document.hidden || !hasSize()) return;
+      const reduce = motionPreference.matches;
+      if (!reduce && t - last < (compact ? 50 : 33)) {
+        wake();
+        return;
+      }
+      const dt = last ? Math.min((t - last) / 1000, 0.1) : 0;
       last = t;
 
       if (explodedRef.current) {
@@ -234,7 +311,7 @@ export default function AsciiBrain({
         el.style.opacity = "1";
       }
 
-      energy *= 0.9;
+      energy = reduce ? 0 : energy * 0.9;
       const level = Math.min(1, energy / SHAKE_LIMIT);
       onShakeRef.current?.(level);
 
@@ -242,10 +319,15 @@ export default function AsciiBrain({
       spin += spinVel;
       spinVel *= 0.92;
       brain.rotation.y = 0.6 + spin + targetX;
-      brain.rotation.x += (0.25 + targetY - brain.rotation.x) * 0.06;
+      brain.rotation.x = reduce
+        ? 0.25 + targetY
+        : brain.rotation.x + (0.25 + targetY - brain.rotation.x) * 0.06;
       brain.rotation.z = Math.sin(t / 28) * level * level * 0.35;
       brain.position.x = (Math.random() - 0.5) * level * level * 0.14;
-      brain.position.y = Math.sin(t / 1400) * 0.04 + (Math.random() - 0.5) * level * level * 0.1;
+      brain.position.y = reduce
+        ? 0
+        : Math.sin(t / 1400) * 0.04 +
+          (Math.random() - 0.5) * level * level * 0.1;
 
       // Shift from signal blue toward white-hot as the brain is stressed.
       const heat = Math.max(0, (level - 0.45) / 0.55);
@@ -259,31 +341,54 @@ export default function AsciiBrain({
         energy = 0;
         if (data && data.chars.length) {
           explodedRef.current = true;
+          wasExploded = true;
           el.style.opacity = "0";
           onShakeRef.current?.(0);
           onExplodeRef.current(data);
         }
       }
+      if (!reduce && !explodedRef.current) wake();
     };
-    raf = requestAnimationFrame(tick);
+    wakeRef.current = updateAnimation;
+    document.addEventListener("visibilitychange", updateAnimation);
+    motionPreference.addEventListener("change", updateAnimation);
 
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();
       ro.disconnect();
+      wakeRef.current = () => {};
+      document.removeEventListener("visibilitychange", updateAnimation);
+      motionPreference.removeEventListener("change", updateAnimation);
       host.removeEventListener("pointermove", onPointerMove);
       host.removeEventListener("pointerdown", onPointerDown);
       host.removeEventListener("pointerup", onPointerUp);
       host.removeEventListener("pointercancel", onPointerUp);
       host.removeEventListener("pointerleave", onLeave);
-      brain.traverse((o) => {
+      brain.traverse(o => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();
       });
       material.dispose();
-      renderer.dispose();
+      renderer?.dispose();
       el.remove();
     };
   }, []);
 
-  return <div ref={hostRef} className={`ascii-host overflow-hidden font-mono ${className ?? ""}`} />;
+  useEffect(() => wakeRef.current(), [exploded]);
+
+  return (
+    <div
+      ref={hostRef}
+      className={`ascii-host overflow-hidden font-mono ${className ?? ""}`}
+    >
+      {unavailable && (
+        <div
+          className="flex h-full items-center justify-center px-4 text-center text-sm leading-relaxed text-slate-light"
+          role="status"
+        >
+          The interactive brain is unavailable in this browser.
+        </div>
+      )}
+    </div>
+  );
 }
