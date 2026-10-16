@@ -22,7 +22,7 @@ export default function StatementSection() {
   const words = statement.split(" ");
 
   return (
-    <section id="intro" aria-label="About BlueMatter" className="py-32 md:py-44">
+    <section id="intro" aria-label="About BlueMatter" className="flex min-h-svh items-center pb-48 pt-32 md:pb-64 md:pt-44">
       <div className="container">
         <p ref={ref} className="max-w-5xl text-pretty text-3xl font-semibold leading-tight tracking-tight text-paper md:text-5xl">
           {words.map((w, i) => (

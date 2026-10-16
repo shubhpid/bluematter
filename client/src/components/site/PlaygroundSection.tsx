@@ -1,29 +1,12 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense } from "react";
 import { Reveal, SplitWords } from "./motion";
 import NeuralField from "./NeuralField";
 import ThoughtAscii from "./ThoughtAscii";
 
 const BrainCard = lazy(() => import("./BrainCard"));
 
-function DeferredBrain() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const host = ref.current;
-    if (!host) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setReady(true);
-        observer.disconnect();
-      },
-      { rootMargin: "300px" }
-    );
-    observer.observe(host);
-    return () => observer.disconnect();
-  }, []);
-
+/** Load immediately alongside the home page so setup finishes before scrolling here. */
+function PreloadedBrain() {
   const placeholder = (
     <div
       className="flex h-full items-center justify-center rounded-lg border border-ink-line bg-ink/80 px-6 text-center font-mono text-sm text-slate-light"
@@ -34,14 +17,10 @@ function DeferredBrain() {
   );
 
   return (
-    <div ref={ref} className="h-[26rem] w-full sm:h-[32rem] lg:h-[36rem]">
-      {ready ? (
-        <Suspense fallback={placeholder}>
-          <BrainCard className="h-full w-full" />
-        </Suspense>
-      ) : (
-        placeholder
-      )}
+    <div className="h-[26rem] w-full sm:h-[32rem] lg:h-[36rem]">
+      <Suspense fallback={placeholder}>
+        <BrainCard className="h-full w-full" />
+      </Suspense>
     </div>
   );
 }
@@ -72,7 +51,7 @@ export default function PlaygroundSection() {
 
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
           <Reveal y={40}>
-            <DeferredBrain />
+            <PreloadedBrain />
           </Reveal>
           <Reveal y={40} delay={0.1}>
             <ThoughtAscii />

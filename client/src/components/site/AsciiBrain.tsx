@@ -213,6 +213,25 @@ export default function AsciiBrain({
     fill.position.set(-3, -1, 2);
     scene.add(key, fill, new THREE.AmbientLight(0xffffff, 0.08));
 
+    const disposeScene = () => {
+      brain.traverse(o => {
+        if (o instanceof THREE.Mesh) o.geometry.dispose();
+      });
+      material.dispose();
+      renderer?.dispose();
+      el.remove();
+    };
+
+    // Warm the shaders, GPU buffers and ASCII output before entering the viewport.
+    // Continuous animation below still pauses while the brain is offscreen.
+    try {
+      effect.render(scene, camera);
+    } catch {
+      disposeScene();
+      setUnavailable(true);
+      return;
+    }
+
     let targetX = 0;
     let targetY = 0;
     let lastPX: number | null = null;
@@ -365,12 +384,7 @@ export default function AsciiBrain({
       host.removeEventListener("pointerup", onPointerUp);
       host.removeEventListener("pointercancel", onPointerUp);
       host.removeEventListener("pointerleave", onLeave);
-      brain.traverse(o => {
-        if (o instanceof THREE.Mesh) o.geometry.dispose();
-      });
-      material.dispose();
-      renderer?.dispose();
-      el.remove();
+      disposeScene();
     };
   }, []);
 
