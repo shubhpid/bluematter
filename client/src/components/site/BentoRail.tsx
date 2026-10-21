@@ -83,13 +83,13 @@ export default function BentoRail({
         ref={railRef}
         tabIndex={0}
         aria-label={label}
-        className="rail flex w-full min-w-0 snap-x snap-proximity gap-4 overflow-x-auto overscroll-x-contain pb-2 outline-none focus-visible:ring-2 focus-visible:ring-signal"
+        className="rail flex w-full min-w-0 snap-x snap-proximity gap-4 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-2 outline-none focus-visible:ring-2 focus-visible:ring-signal"
       >
         {items.map((item, i) => (
           <motion.li
             key={item.title}
-            initial={reduce ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={reduce ? false : { opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{
               duration: 0.9,

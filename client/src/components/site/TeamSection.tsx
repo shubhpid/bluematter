@@ -1,25 +1,41 @@
+import { useMotionValue } from "framer-motion";
 import {
-  AnimatePresence,
-  motion,
-  useMotionValue,
-  useSpring,
-} from "framer-motion";
-import { useRef, useState, type PointerEvent } from "react";
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
 import erik from "../assets/erik-headshot.webp";
 import lucca from "../assets/lucca-headshot.webp";
 import saee from "../assets/saee-headshot.webp";
 import taylor from "../assets/taylor-foster-headshot.webp";
 import tyler from "../assets/tyler-headshot.webp";
+import nathan from "../assets/nathan-narrik-headshot.webp";
+import shubhadip from "../assets/shubhadip-saha-headshot.webp";
+import ronak from "../assets/ronak-bhatia-headshot.webp";
+import TeamBio from "./TeamBio";
 import { Reveal, SplitWords } from "./motion";
 
-const team = [
+type TeamMember = {
+  name: string;
+  role: string;
+  dept: string;
+  photo: string;
+  focus: string;
+  bio?: string;
+};
+
+const team: TeamMember[] = [
   {
     name: "Erik O'Bryant",
     role: "Project & Software Development Lead",
     dept: "Biomedical Engineering",
     photo: erik,
     focus:
-      "Project direction, system design, and signal processing architecture",
+      "Project direction, system design and assembly, testing and data collection",
   },
   {
     name: "Tyler Santos",
@@ -33,7 +49,8 @@ const team = [
     role: "Mechanical Systems & Fabrication Lead",
     dept: "Biomedical Engineering",
     photo: lucca,
-    focus: "Software development, data collection, and mechanical integration",
+    focus: "Electrode design, 3D modeling, research, and fabrication",
+    bio: "Lucca Saraceno is a biomedical engineering student at Arizona State University with a strong interest in neuroscience and neurotechnology. On the BlueMatter team, he works on the development and testing of electrode designs for a comfortable, non-invasive brain-computer interface. His interests center around combining engineering and neuroscience to develop technologies that can better interface with the human nervous system.",
   },
   {
     name: "Taylor Foster",
@@ -49,21 +66,107 @@ const team = [
     photo: saee,
     focus: "AI model development, electrode research, and preprocessing",
   },
+  {
+    name: "Nathan Narrik",
+    role: "Biometrics & Machine Learning Lead",
+    dept: "Computer Science",
+    photo: nathan,
+    focus: "EMG Post-processing, Data Collection, Software Development",
+  },
+  {
+    name: "Shubhadip Saha",
+    role: "Software Development & Design Lead",
+    dept: "Computer Science, Human Systems Engineering",
+    photo: shubhadip,
+    focus: "Frontend Design, User Workflows, and Software Integration",
+  },
+  {
+    name: "Ronak Bhatia",
+    role: "Robotics Lead",
+    dept: "Mechanical Engineering",
+    photo: ronak,
+    focus: "Robotic Arm Development, Physical Prototyping",
+    bio: "Ronak Bhatia is a junior studying Mechanical Engineering at Barrett, The Honors College at ASU. He joined the Luminosity Lab as a Vanderploeg Luminosity Scholar. On Project BlueMatter, he is developing the team’s robotic arm, improving its design and creating a way to mount it to a harness so the wearer can control it.",
+  },
 ];
 
 export default function TeamSection() {
-  const listRef = useRef<HTMLUListElement>(null);
-  const [hovered, setHovered] = useState<number | null>(null);
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const x = useSpring(mx, { stiffness: 250, damping: 30 });
-  const y = useSpring(my, { stiffness: 250, damping: 30 });
+  const [preview, setPreview] = useState<{
+    index: number;
+    expanded: boolean;
+    pinned: boolean;
+  } | null>(null);
+  const triggers = useRef<(HTMLButtonElement | null)[]>([]);
+  const hoverTimer = useRef<number | undefined>(undefined);
+  const closeTimer = useRef<number | undefined>(undefined);
+  const previewId = useId();
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
 
-  const onMove = (e: PointerEvent) => {
-    const r = listRef.current?.getBoundingClientRect();
-    if (!r) return;
-    mx.set(e.clientX - r.left);
-    my.set(e.clientY - r.top);
+  const clearTimers = useCallback(() => {
+    window.clearTimeout(hoverTimer.current);
+    window.clearTimeout(closeTimer.current);
+  }, []);
+  useEffect(() => clearTimers, [clearTimers]);
+
+  const closePreview = useCallback(
+    (restoreFocus = false) => {
+      clearTimers();
+      setPreview(null);
+      if (restoreFocus && preview)
+        triggers.current[preview.index]?.focus({ preventScroll: true });
+    },
+    [clearTimers, preview]
+  );
+
+  const keepPreview = () => window.clearTimeout(closeTimer.current);
+  const leavePreview = () => {
+    clearTimers();
+    closeTimer.current = window.setTimeout(() => {
+      // Ignore a stale leave event if layout or spring motion put the pointer back on the card.
+      if (document.getElementById(previewId)?.matches(":hover")) return;
+      setPreview(current => (current?.pinned ? current : null));
+    }, 350);
+  };
+
+  const movePortrait = (event: PointerEvent, index: number) => {
+    if (event.pointerType === "touch" || preview?.pinned) return;
+    // Once open, hold the image still as the pointer crosses into the biography.
+    if (
+      preview?.expanded &&
+      (preview.index !== index ||
+        !(event.target as Element).closest("[data-team-name]"))
+    )
+      return;
+    cursorX.set(event.clientX);
+    cursorY.set(event.clientY);
+  };
+
+  const enterRow = (event: PointerEvent, index: number) => {
+    if (event.pointerType === "touch" || preview?.pinned) return;
+    clearTimers();
+    if (preview?.index === index && preview.expanded) return;
+    cursorX.set(event.clientX);
+    cursorY.set(event.clientY);
+    setPreview({ index, expanded: false, pinned: false });
+    if (team[index].bio)
+      hoverTimer.current = window.setTimeout(() => {
+        setPreview(current =>
+          current?.index === index ? { ...current, expanded: true } : current
+        );
+      }, 5000);
+  };
+
+  const toggleBio = (event: MouseEvent<HTMLButtonElement>, index: number) => {
+    clearTimers();
+    if (preview?.index === index && preview.pinned) {
+      closePreview();
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    cursorX.set(event.detail ? event.clientX : rect.right);
+    cursorY.set(event.detail ? event.clientY : rect.top + rect.height / 2);
+    setPreview({ index, expanded: true, pinned: true });
   };
 
   return (
@@ -92,29 +195,7 @@ export default function TeamSection() {
           </Reveal>
         </div>
 
-        <ul
-          ref={listRef}
-          onPointerMove={onMove}
-          onPointerLeave={() => setHovered(null)}
-          className="relative border-t border-ink-line"
-        >
-          <AnimatePresence>
-            {hovered !== null && (
-              <motion.img
-                key="portrait"
-                src={team[hovered].photo}
-                decoding="async"
-                alt=""
-                aria-hidden="true"
-                style={{ x, y, translateX: "-50%", translateY: "-50%" }}
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.25 }}
-                className="pointer-events-none absolute left-0 top-0 z-10 hidden h-56 w-44 rounded-lg object-cover shadow-2xl lg:block"
-              />
-            )}
-          </AnimatePresence>
+        <ul className="border-t border-ink-line">
           {team.map((m, i) => (
             <Reveal
               as="li"
@@ -123,9 +204,11 @@ export default function TeamSection() {
               className="border-b border-ink-line"
             >
               <div
-                onPointerEnter={() => setHovered(i)}
-                className={`grid items-center gap-4 py-6 transition-opacity duration-300 md:grid-cols-[auto_1.2fr_1fr_auto] md:gap-8 md:py-8 ${
-                  hovered !== null && hovered !== i ? "lg:opacity-35" : ""
+                onPointerEnter={event => enterRow(event, i)}
+                onPointerMove={event => movePortrait(event, i)}
+                onPointerLeave={leavePreview}
+                className={`grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2 py-6 transition-opacity duration-300 md:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,0.75fr)] md:gap-x-8 md:py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.4fr)_minmax(0,0.8fr)] ${
+                  preview !== null && preview.index !== i ? "lg:opacity-35" : ""
                 }`}
               >
                 <img
@@ -135,27 +218,59 @@ export default function TeamSection() {
                   decoding="async"
                   width={56}
                   height={56}
-                  className="size-14 rounded-md object-cover lg:hidden"
+                  className="row-span-3 size-14 self-start rounded-md object-cover md:row-span-2 lg:hidden"
                 />
-                <h3 className="type-h3 hidden text-3xl text-paper lg:block lg:text-4xl">
-                  {m.name}
+                <h3 className="type-h3 flex min-w-0 items-center self-stretch text-2xl text-paper md:col-start-2 lg:col-start-1 lg:row-span-2 lg:text-4xl">
+                  {m.bio ? (
+                    <button
+                      ref={node => {
+                        triggers.current[i] = node;
+                      }}
+                      type="button"
+                      data-team-name
+                      aria-haspopup="dialog"
+                      aria-expanded={preview?.index === i && preview.expanded}
+                      aria-controls={
+                        preview?.index === i && preview.expanded
+                          ? previewId
+                          : undefined
+                      }
+                      onClick={event => toggleBio(event, i)}
+                      className="-my-6 flex w-full items-center rounded-sm py-6 text-left transition-colors hover:text-signal focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal md:-my-8 md:py-8"
+                    >
+                      {m.name}
+                    </button>
+                  ) : (
+                    m.name
+                  )}
                 </h3>
-                <div className="flex flex-col gap-1">
-                  <span className="type-h3 text-2xl text-paper lg:hidden">
-                    {m.name}
-                  </span>
+                <div className="col-start-2 flex min-w-0 flex-col gap-1 md:row-start-2 lg:row-span-2 lg:row-start-1">
                   <span className="font-semibold text-signal">{m.role}</span>
                   <span className="text-sm leading-relaxed text-slate-light">
                     {m.focus}
                   </span>
                 </div>
-                <span className="text-sm font-semibold text-slate md:text-right">
+                <span className="col-start-2 text-sm font-semibold text-slate md:col-start-3 md:row-span-2 md:row-start-1 md:text-right">
                   {m.dept}
                 </span>
               </div>
             </Reveal>
           ))}
         </ul>
+        {preview && (
+          <TeamBio
+            id={previewId}
+            member={team[preview.index]}
+            expanded={preview.expanded}
+            pinned={preview.pinned}
+            cursorX={cursorX}
+            cursorY={cursorY}
+            trigger={triggers.current[preview.index]}
+            onClose={closePreview}
+            onPointerEnter={keepPreview}
+            onPointerLeave={leavePreview}
+          />
+        )}
       </div>
     </section>
   );
