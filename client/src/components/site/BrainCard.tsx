@@ -6,6 +6,16 @@ import AsciiExplosion from "./AsciiExplosion";
 import { EASE } from "./motion";
 
 const METER_CELLS = 14;
+const WHEEL_GESTURE_GAP_MS = 180;
+const SCROLL_KEYS = new Set([
+  "ArrowDown",
+  "ArrowUp",
+  "PageDown",
+  "PageUp",
+  " ",
+  "Home",
+  "End",
+]);
 
 function Corner({ className }: { className: string }) {
   return (
@@ -21,6 +31,7 @@ export default function BrainCard({ className = "" }: { className?: string }) {
   const homeRef = useRef<HTMLDivElement>(null);
   const meterRef = useRef<HTMLSpanElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const lastWheelAtRef = useRef(-Infinity);
   const [explosion, setExplosion] = useState<ExplosionData | null>(null);
   const [returning, setReturning] = useState(false);
 
@@ -46,12 +57,54 @@ export default function BrainCard({ className = "" }: { className?: string }) {
   }, []);
 
   useEffect(() => {
-    if (!explosion) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") rebuild();
+    // Track wheel bursts even before an explosion so momentum from an existing
+    // gesture cannot rebuild it. Scroll-position changes alone are not user input.
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || (e.deltaX === 0 && e.deltaY === 0)) return;
+      const now = performance.now();
+      const startsGesture = now - lastWheelAtRef.current > WHEEL_GESTURE_GAP_MS;
+      lastWheelAtRef.current = now;
+      if (explosion && startsGesture) rebuild();
     };
+    window.addEventListener("wheel", onWheel, { passive: true });
+    if (!explosion) {
+      return () => window.removeEventListener("wheel", onWheel);
+    }
+
+    let touchStart: { x: number; y: number } | null = null;
+    const onTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchStart =
+        e.touches.length === 1 ? { x: touch.clientX, y: touch.clientY } : null;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!touchStart || e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      if (
+        Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) >
+        8
+      ) {
+        rebuild();
+      }
+    };
+    const onTouchEnd = () => {
+      touchStart = null;
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || (!e.repeat && SCROLL_KEYS.has(e.key)))
+        rebuild();
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
     window.addEventListener("keydown", onKey);
     return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
       window.removeEventListener("keydown", onKey);
     };
   }, [explosion, rebuild]);
