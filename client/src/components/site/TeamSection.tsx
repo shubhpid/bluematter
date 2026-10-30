@@ -58,6 +58,7 @@ const team: TeamMember[] = [
     dept: "Human Systems Engineering",
     photo: taylor,
     focus: "Machine learning research, market analysis, and documentation",
+    bio: "Taylor Foster graduated from ASU with a masters in Humans Systems Engineering. Non-coincidentally, Taylor served as BlueMatter's Human Systems Lead. In this role, he provided valuable insights into how everyday people would interact with our tech, and steered us towards prioritizing a human-centric design. He was also invaluable in making our project presentable, from designing posters and slide-decks to getting our first website off the ground, he understood how to make these deliverables appealing to your everyday person. Additionally, Taylor had an affinity for dynamical systems, and he performed extensive research on its usage in BCIs.",
   },
   {
     name: "Saee Pangarkar",
@@ -65,6 +66,7 @@ const team: TeamMember[] = [
     dept: "Biomedical Engineering",
     photo: saee,
     focus: "AI model development, electrode research, and preprocessing",
+    bio: "Saee Pangarkar graduated from ASU with a bachelors in Biomedical Engineering. On BlueMatter she served as the research lead, and in this role she found and reviewed countless article across a variety of topics. From de-noising techniques to AI algorithms, Saee helped us stay up-to-date on existing literature, ensuring that we didn't re-invent the wheel. Saee also worked to implement many of the things she researched, including signal artifact removal and brain mapping software.",
   },
   {
     name: "Nathan Narrik",
