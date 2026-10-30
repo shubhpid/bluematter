@@ -17,6 +17,7 @@ import nathan from "../assets/nathan-narrik-headshot.webp";
 import shubhadip from "../assets/shubhadip-saha-headshot.webp";
 import ronak from "../assets/ronak-bhatia-headshot.webp";
 import arjun from "../assets/arjun-arora-headshot.jpg";
+import kristopher from "../assets/kristopher-carrillo-headshot.png";
 import TeamBio from "./TeamBio";
 import { Reveal, SplitWords } from "./motion";
 
@@ -51,6 +52,13 @@ const team: TeamMember[] = [
     dept: "Electrical Engineering",
     photo: arjun,
     focus: "Circuit Design, Embedded Systems, and Signal Processing",
+  },
+  {
+    name: "Kristopher Carrillo",
+    role: "Systems Integration Lead",
+    dept: "",
+    photo: kristopher,
+    focus: "Embedded systems, firmware architecture (EEG, Robots)",
   },
   {
     name: "Lucca Saraceno",
