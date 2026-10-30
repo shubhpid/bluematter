@@ -16,6 +16,7 @@ import tyler from "../assets/tyler-headshot.webp";
 import nathan from "../assets/nathan-narrik-headshot.webp";
 import shubhadip from "../assets/shubhadip-saha-headshot.webp";
 import ronak from "../assets/ronak-bhatia-headshot.webp";
+import arjun from "../assets/arjun-arora-headshot.jpg";
 import TeamBio from "./TeamBio";
 import { Reveal, SplitWords } from "./motion";
 
@@ -43,6 +44,13 @@ const team: TeamMember[] = [
     dept: "Electrical Engineering",
     photo: tyler,
     focus: "Custom PCB design, amplification circuitry, and power management",
+  },
+  {
+    name: "Arjun Arora",
+    role: "Electrical Systems Lead",
+    dept: "Electrical Engineering",
+    photo: arjun,
+    focus: "Circuit Design, Embedded Systems, and Signal Processing",
   },
   {
     name: "Lucca Saraceno",
